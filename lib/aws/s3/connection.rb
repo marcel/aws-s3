@@ -49,7 +49,7 @@ module AWS
         else
           http.start(&requester)
         end
-      rescue Errno::EPIPE, Timeout::Error, Errno::EPIPE, Errno::EINVAL
+      rescue Errno::EPIPE, Timeout::Error, Errno::EINVAL
         @http = create_connection
         attempts == 3 ? raise : (attempts += 1; retry)
       end
@@ -178,7 +178,7 @@ module AWS
           # will be implicitly set to 443, unless specified otherwise. Defaults to false.
           # * <tt>:persistent</tt> - Whether to use a persistent connection to the server. Having this on provides around a two fold 
           # performance increase but for long running processes some firewalls may find the long lived connection suspicious and close the connection.
-          # If you run into connection errors, try setting <tt>:persistent</tt> to false. Defaults to true.
+          # If you run into connection errors, try setting <tt>:persistent</tt> to false. Defaults to false.
           # * <tt>:proxy</tt> - If you need to connect through a proxy, you can specify your proxy settings by specifying a <tt>:host</tt>, <tt>:port</tt>, <tt>:user</tt>, and <tt>:password</tt>
           # with the <tt>:proxy</tt> option.
           # The <tt>:host</tt> setting is required if specifying a <tt>:proxy</tt>. 
@@ -278,7 +278,7 @@ module AWS
           end
           
           def extract_persistent!
-            self[:persistent] = options.has_key?(:persitent) ? options[:persitent] : true
+            self[:persistent] = options.has_key?(:persitent) ? options[:persitent] : false
           end
           
           def extract_proxy_settings!

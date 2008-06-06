@@ -27,12 +27,12 @@ class ConnectionTest < Test::Unit::TestCase
     assert_equal 'https://', connection.protocol
   end
   
-  def test_connection_is_persistent_by_default
+  def test_connection_is_not_persistent_by_default
     connection = Connection.new(@keys)
-    assert connection.persistent?
-    
-    connection = Connection.new(@keys.merge(:persistent => false))
     assert !connection.persistent?
+    
+    connection = Connection.new(@keys.merge(:persistent => true))
+    assert connection.persistent?
   end
   
   def test_server_and_port_are_passed_onto_connection
