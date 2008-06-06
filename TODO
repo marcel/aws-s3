@@ -1,0 +1,26 @@
+0.3.0
+
+  [ ] Alias make alias for establish_connection! that is non-bang
+
+  [ ] Pass filter criteria like :max_keys onto methods like logs_for and logs which return logs.
+  [ ] Add high level support to custom logging information as documented in the "Adding Custom Information..." here http://docs.amazonwebservices.com/AmazonS3/2006-03-01/LogFormat.html
+
+[ ] Bucket.delete(:force => true) needs to fetch all objects in the bucket until there are no more, taking into account the max-keys limit of 1000 objects at a time and it needs to do so in a very efficient manner so it can handle very large buckets (using :prefix and :marker)
+[ ] Ability to set content_type on S3Object that has not been stored yet
+[ ] Allow symbol and abbreviated version of logging options ('target_prefix' => :prefix, 'target_bucket' => :bucket)
+[ ] Allow symbol options for grant's constructor ('permission' => :permission)
+[ ] Reconsider save method to Policies returned by Bucket and S3Object's acl instance method so you can do some_object.acl.save after modifying it rather than some_object.acl(some_object.acl)
+
+[X] S3Object.copy and S3Object.move should preserve the acl
+[X] Consider opening up Net::HTTPGenericRequest to replace hardcoded chunk_size to something greater than 1k (maybe 500k since the files are presumed to be quite large)
+[X] Add S3Object.exists?
+[X] See about replacing XmlSimple with libxml if it's installed since XmlSimple can be rather slow (due to wrapping REXML)
+[X] Ability to build up the README from internal docs so documentation for various classes and the README can feed from a single source
+[X] Bittorrent documentation
+[X] Document logging methods
+[X] Bittorrent
+[X] ACL documentation
+[X] Log management ([de]activation & retrieval)
+[X] Remote ACL tests
+[X] ACL requesting and parsing
+[X] ACL updating for already stored objects which merges with existing ACL

@@ -1,0 +1,67 @@
+trunk:
+
+0.4.0:
+
+- Various adjustments to connection handling to try to mitigate exceptions raised from deep within Net::HTTP.
+
+- Don't coerce numbers that start with a zero because the zero will be lost. If a bucket, for example, has a name like '0815', all operation it will fail. Closes ticket #10089 [reported anonymously]"
+
+- Add ability to connect through a proxy using the :proxy option when establishing a connection. Suggested by [Simon Horne <simon@soulware.co.uk>]
+
+- Add :authenticated option to url_for. When passing false, don't generate signature parameters for query string.
+
+- Make url_for accept custom port settings. [Rich Olson] 
+
+0.3.0:
+
+- Ensure content type is eventually set to account for changes made to Net::HTTP in Ruby version 1.8.5. Reported by [David Hanson, Stephen Caudill, Tom Mornini <tmornini@engineyard.com>]
+
+- Add :persistent option to connections which keeps a persistent connection rather than creating a new one per request, defaulting to true. Based on a patch by [Metalhead <metalhead@metalhead.ws>]
+
+- If we are retrying a request after rescuing one of the retry exceptions, rewind the body if its an IO stream so it starts at the beginning. [Jamis Buck]
+
+- Ensure that all paths being submitted to S3 are valid utf8. If they are not, we remove the extended characters. Ample help from [Jamis Buck]
+
+- Wrap logs in Log objects which exposes each line as a Log::Line that has accessors by name for each field.
+
+- Various performance optimizations for the extensions code. [Roman LE NEGRATE <roman2k@free.fr>]
+
+- Make S3Object.copy more efficient by streaming in both directions in parallel.
+
+- Open up Net:HTTPGenericRequest to make the chunk size 1 megabyte, up from 1 kilobyte.
+
+- Add S3Object.exists?
+
+0.2.1:
+
+- When the bucket name argument (for e.g. Bucket.objects) is being used as the option hash, reassign it to the options variable and set the bucket to nil so bucket inference + options works.
+
+- Don't call CGI.escape on query string parameters in Hash#to_query_string since all paths get passed through URI.escape right before the request is made. Paths were getting double escaped. Bug spotted by [David Hanson]
+
+- Make s3sh exec irb.bat if on Windows. Bug spotted by [N. Sathish Kumar <nsathishk@yahoo.com>]
+
+- Avoid class_variable_(get|set) since it was only recently added to Ruby. Spotted by [N. Sathish Kumar <nsathishk@yahoo.com>]
+
+- Raise NoSuchKey if S3Object.about requests a key that does not exist.
+
+- If the response body is an empty string, don't try to parse it as xml.
+
+- Don't reject every body type save for IO and String at the door when making a request. Suggested by [Alex MacCaw <maccman@gmail.com>]
+
+- Allow dots in bucket names. [Jesse Newland]
+
+0.2.0:
+
+- Infer content type for an object when calling S3Object.store without explicitly passing in the :content_type option.
+
+0.1.2:
+
+- Scrap (overly) fancy generator based version of CoercibleString with a much simpler and clearer case statement. Continuations are really slow and the specific use of the generator was leaking memory. Bug spotted by [Remco van't Veer]
+
+0.1.1:
+
+- Don't add the underscore method to String if it is already defined (like, for example, from ActiveSupport). Bug spotted by [Matt White <stockliasteroid@gmail.com>]
+
+0.1.0:
+
+- Initial public release
