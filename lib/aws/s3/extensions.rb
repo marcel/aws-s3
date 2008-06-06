@@ -102,7 +102,7 @@ end
 module Kernel
   def __method__(depth = 0)
     caller[depth][/`([^']+)'/, 1]
-  end if RUBY_VERSION < '1.9'
+  end if RUBY_VERSION < '1.8.7'
   
   def memoize(reload = false, storage = nil)
     storage = "@#{storage || __method__(1)}"
