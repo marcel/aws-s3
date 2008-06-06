@@ -1,5 +1,7 @@
 trunk:
 
+- Do not make connections persistent by default. This "feature" causes far more broken pipes than it is worth. Use with caution.
+
 0.4.0:
 
 - Various adjustments to connection handling to try to mitigate exceptions raised from deep within Net::HTTP.
