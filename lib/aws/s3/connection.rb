@@ -38,7 +38,7 @@ module AWS
             else                                                                                      
               request.body = body                                                                     
             end
-            request.content_length = body.respond_to?(:lstat) ? body.lstat.size : body.size         
+            request.content_length = body.respond_to?(:lstat) ? body.stat.size : body.size         
           else
             request.content_length = 0                                                                                       
           end
