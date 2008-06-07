@@ -131,7 +131,7 @@ namespace :dist do
   package_name = lambda {|specification| File.join('pkg', "#{specification.name}-#{specification.version}")}
   
   desc 'Push a release to rubyforge'
-  task :release do => [:confirm_release, :clean, :add_release_marker_to_changelog, :package, :commit_changelog, :tag] do 
+  task :release => [:confirm_release, :clean, :add_release_marker_to_changelog, :package, :commit_changelog, :tag] do 
     require 'rubyforge'
     package = package_name[spec]
 
