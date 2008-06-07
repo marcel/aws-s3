@@ -81,9 +81,8 @@ class MultiConnectionsTest < Test::Unit::TestCase
   def setup
     Base.send(:connections).clear
   end
-  alias_method :teardown, :setup
   
-  def test_default_connection_options_are_used_for_subsequent_connections
+  def test_default_connection_options_are_used_for_subsequent_connections    
     assert !Base.connected?
     
     assert_raises(MissingAccessKey) do
@@ -107,7 +106,7 @@ class MultiConnectionsTest < Test::Unit::TestCase
     end
     
     # All subclasses are currently using the default connection
-    assert Base.connection == Bucket.connection
+    assert_equal Base.connection, Bucket.connection
     
     # No need to pass in the required options. The default connection will supply them
     assert_nothing_raised do

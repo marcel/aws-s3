@@ -4,9 +4,6 @@ class ErrorTest < Test::Unit::TestCase
   def setup
     @container = AWS::S3
     @error = Error.new(Parsing::XmlParser.new(Fixtures::Errors.access_denied))
-  end
-  
-  def teardown
     @container.send(:remove_const, :NotImplemented) if @container.const_defined?(:NotImplemented)
   end
   
