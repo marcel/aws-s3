@@ -1,4 +1,4 @@
-trunk:
+head:
 
 - Bug #17458 fixed. Normalize the :expires_in option to always be an integer even if the actual object passed in is a proxy to an integer, such as is the case with 2.hours from ActiveSupport which is actually an instance of ActiveSupport::Duration. Reported by [Steve Kickert steve@riverocktech.com]
 
