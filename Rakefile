@@ -150,6 +150,7 @@ namespace :dist do
     
     begin
       rubyforge.add_release(spec.rubyforge_project, spec.name, spec.version, "#{package}.tar.gz", "#{package}.gem")
+      puts "Version #{spec.version} released!"
     rescue
       puts 'Release failed!'
     end
