@@ -42,9 +42,10 @@ class String
   # ActiveSupport adds an underscore method to String so let's just use that one if
   # we find that the method is already defined
   def underscore
-    gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
-    gsub(/([a-z\d])([A-Z])/,'\1_\2').
-    downcase
+    gsub(/::/, '/').
+      gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+      gsub(/([a-z\d])([A-Z])/,'\1_\2').
+      tr("-", "_").downcase
   end unless public_method_defined? :underscore
 
   def utf8?
