@@ -1,5 +1,7 @@
 trunk:
 
+- Bug #19189 fixed. No longer reference Date::ABBR_MONTHS constant which was removed in Ruby 1.8.6. Reported by [Khurram Virani (kvirani)]
+
 - Bug #20487 fixed. If a request fails and is retried, only escape the request path the first time. Reported by [anonymous]
 
 - Replace ad-hoc S3Object.copy method with newly support built in API call.
