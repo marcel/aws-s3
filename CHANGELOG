@@ -1,5 +1,7 @@
 trunk:
 
+- Bug #20487 fixed. If a request fails and is retried, only escape the request path the first time. Reported by [anonymous]
+
 - Replace ad-hoc S3Object.copy method with newly support built in API call.
 
 - Do not make connections persistent by default. This "feature" causes far more broken pipes than it is worth. Use with caution.

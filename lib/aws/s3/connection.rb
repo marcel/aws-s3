@@ -27,7 +27,7 @@ module AWS
         body.rewind if body.respond_to?(:rewind) unless attempts.zero?      
         
         requester = Proc.new do 
-          path    = self.class.prepare_path(path)
+          path    = self.class.prepare_path(path) if attempts.zero? # Only escape the path once
           request = request_method(verb).new(path, headers)
           ensure_content_type!(request)
           add_user_agent!(request)

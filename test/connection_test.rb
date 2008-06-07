@@ -1,42 +1,43 @@
 require File.dirname(__FILE__) + '/test_helper'
 
 class ConnectionTest < Test::Unit::TestCase
+  attr_reader :keys
   def setup
     @keys = {:access_key_id => '123', :secret_access_key => 'abc'}
   end
   
   def test_creating_a_connection
-    connection = Connection.new(@keys)
+    connection = Connection.new(keys)
     assert_kind_of Net::HTTP, connection.http
   end
   
   def test_use_ssl_option_is_set_in_connection
-    connection = Connection.new(@keys.merge(:use_ssl => true))
+    connection = Connection.new(keys.merge(:use_ssl => true))
     assert connection.http.use_ssl?
   end
   
   def test_setting_port_to_443_implies_use_ssl
-    connection = Connection.new(@keys.merge(:port => 443))
+    connection = Connection.new(keys.merge(:port => 443))
     assert connection.http.use_ssl?
   end
   
   def test_protocol
-    connection = Connection.new(@keys)
+    connection = Connection.new(keys)
     assert_equal 'http://', connection.protocol
-    connection = Connection.new(@keys.merge(:use_ssl => true))
+    connection = Connection.new(keys.merge(:use_ssl => true))
     assert_equal 'https://', connection.protocol
   end
   
   def test_connection_is_not_persistent_by_default
-    connection = Connection.new(@keys)
+    connection = Connection.new(keys)
     assert !connection.persistent?
     
-    connection = Connection.new(@keys.merge(:persistent => true))
+    connection = Connection.new(keys.merge(:persistent => true))
     assert connection.persistent?
   end
   
   def test_server_and_port_are_passed_onto_connection
-    connection = Connection.new(@keys)
+    connection = Connection.new(keys)
     options    = connection.instance_variable_get('@options')
     assert_equal connection.http.address, options[:server]
     assert_equal connection.http.port, options[:port]
@@ -52,18 +53,18 @@ class ConnectionTest < Test::Unit::TestCase
     end
     
     assert_nothing_raised do
-      Connection.new(@keys)
+      Connection.new(keys)
     end
   end
   
   def test_access_keys_extracted
-    connection = Connection.new(@keys)
+    connection = Connection.new(keys)
     assert_equal '123', connection.access_key_id
     assert_equal 'abc', connection.secret_access_key
   end
   
   def test_request_method_class_lookup
-    c = Connection.new(@keys)
+    connection = Connection.new(keys)
     expectations = {
      :get  => Net::HTTP::Get, :post   => Net::HTTP::Post,
      :put  => Net::HTTP::Put, :delete => Net::HTTP::Delete,
@@ -71,7 +72,7 @@ class ConnectionTest < Test::Unit::TestCase
     }
     
     expectations.each do |verb, klass|
-      assert_equal klass, c.send(:request_method, verb)
+      assert_equal klass, connection.send(:request_method, verb)
     end
   end
 
@@ -99,9 +100,20 @@ class ConnectionTest < Test::Unit::TestCase
   def test_connecting_through_a_proxy
     connection = nil
     assert_nothing_raised do
-      connection = Connection.new(@keys.merge(:proxy => sample_proxy_settings))
+      connection = Connection.new(keys.merge(:proxy => sample_proxy_settings))
     end
     assert connection.http.proxy?
+  end
+  
+  def test_request_only_escapes_the_path_the_first_time_it_runs_and_not_subsequent_times
+    connection = Connection.new(@keys)
+    unescaped_path = 'path with spaces'
+    escaped_path   = 'path%20with%20spaces'
+    
+    flexmock(Connection).should_receive(:prepare_path).with(unescaped_path).once.and_return(escaped_path).ordered
+    flexmock(connection.http).should_receive(:request).and_raise(Errno::EPIPE).ordered
+    flexmock(connection.http).should_receive(:request).ordered
+    connection.request :put, unescaped_path
   end
 end
 
