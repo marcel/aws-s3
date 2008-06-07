@@ -111,7 +111,8 @@ namespace :dist do
   
   desc 'Tag release'
   task :tag do
-    sh %(git tag -a '#{spec.version}-release' -m 'Tagging #{spec.version} release' && git push --tags")
+    sh %(git tag -a '#{spec.version}-release' -m 'Tagging #{spec.version} release')
+    sh 'git push --tags'
   end
   
   desc 'Update changelog to include a release marker'
@@ -125,7 +126,8 @@ namespace :dist do
   end
   
   task :commit_changelog do
-    sh %(git commit CHANGELOG -m "Bump changelog version marker for release" && git push)
+    sh %(git commit CHANGELOG -m "Bump changelog version marker for release")
+    sh 'git push'
   end
   
   package_name = lambda {|specification| File.join('pkg', "#{specification.name}-#{specification.version}")}
@@ -151,8 +153,9 @@ namespace :dist do
     begin
       rubyforge.add_release(spec.rubyforge_project, spec.name, spec.version, "#{package}.tar.gz", "#{package}.gem")
       puts "Version #{spec.version} released!"
-    rescue
+    rescue Exception => exception
       puts 'Release failed!'
+      raise
     end
   end
   
