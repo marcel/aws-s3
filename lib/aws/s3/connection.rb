@@ -77,7 +77,14 @@ module AWS
       end
       
       def protocol(options = {})
-        (options[:use_ssl] || http.use_ssl?) ? 'https://' : 'http://'
+        # This always trumps http.use_ssl?
+        if options[:use_ssl] == false 
+          'http://'
+        elsif options[:use_ssl] || http.use_ssl?
+          'https://'
+        else
+          'http://'
+        end
       end
       
       private

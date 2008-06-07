@@ -28,6 +28,12 @@ class ConnectionTest < Test::Unit::TestCase
     assert_equal 'https://', connection.protocol
   end
   
+  def test_url_for_honors_use_ssl_option_if_it_is_false_even_if_connection_has_use_ssl_option_set
+    # References bug: http://rubyforge.org/tracker/index.php?func=detail&aid=17628&group_id=2409&atid=9356
+    connection = Connection.new(keys.merge(:use_ssl => true))
+    assert_match %r(^http://), connection.url_for('/pathdoesnotmatter', :authenticated => false, :use_ssl => false)
+  end
+  
   def test_connection_is_not_persistent_by_default
     connection = Connection.new(keys)
     assert !connection.persistent?

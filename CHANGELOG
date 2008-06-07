@@ -1,5 +1,7 @@
 trunk:
 
+- Bug #17628 fixed. Don't ignore :use_ssl => false in url_for when the connection is established over ssl. Reported by [Tom Fixed (tkat11)]
+
 - Bug #13052 fixed. Appease some proxies by always including a Content-Length with all requests. Reported by [James Murty (jmurty)]
 
 - Bug #13756 fixed. Attributes that are false should not raise NoMethodError in Base#method_missing. Fixed by [Scott Patten]
