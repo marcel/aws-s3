@@ -42,4 +42,16 @@ class BucketTest < Test::Unit::TestCase
     assert_equal '/bucket_name?max-keys=2', Bucket.send(:path, 'bucket_name', :max_keys => 2)
     assert_equal '/bucket_name', Bucket.send(:path, 'bucket_name', {})    
   end
+  
+  def test_should_not_be_truncated
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Buckets.bucket_with_more_than_one_key, :code => 200})
+    bucket = Bucket.find('marcel_molina')
+    assert !bucket.is_truncated
+  end
+  
+  def test_should_be_truncated
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Buckets.truncated_bucket_with_more_than_one_key, :code => 200})
+    bucket = Bucket.find('marcel_molina')
+    assert bucket.is_truncated    
+  end
 end
