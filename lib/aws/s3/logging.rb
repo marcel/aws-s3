@@ -154,9 +154,10 @@ module AWS
             
             # Time.parse doesn't like %d/%B/%Y:%H:%M:%S %z so we have to transform it unfortunately
             def typecast_time(datetime) #:nodoc:
-              month = datetime[/[a-z]+/i]
+              month       = datetime[/[a-z]+/i]
+              month_names = [nil, "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
               datetime.sub!(%r|^(\w{2})/(\w{3})|, '\2/\1')
-              datetime.sub!(month, Date::ABBR_MONTHS[month.downcase].to_s)
+              datetime.sub!(month, month_names.index(month).to_s)
               datetime.sub!(':', ' ')
               Time.parse(datetime)
             end
