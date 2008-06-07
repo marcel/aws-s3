@@ -102,8 +102,12 @@ module AWS
         end
         memoized :lines
         
+        def path
+          log.path
+        end
+        
         def inspect #:nodoc:
-          "#<%s:0x%s '%s'>" % [self.class.name, object_id, log.path]
+          "#<%s:0x%s '%s'>" % [self.class.name, object_id, path]
         end
         
         private
