@@ -1,5 +1,7 @@
 trunk:
 
+- Replace ad-hoc S3Object.copy method with newly support built in API call.
+
 - Do not make connections persistent by default. This "feature" causes far more broken pipes than it is worth. Use with caution.
 
 0.4.0:

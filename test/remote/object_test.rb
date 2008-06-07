@@ -315,7 +315,7 @@ class RemoteS3ObjectTest < Test::Unit::TestCase
     S3Object.delete('name with spaces', TEST_BUCKET)
   end
   
-  def test_copying_an_object_should_copy_over_its_acl_also
+  def test_copying_an_object_should_copy_over_its_acl_also_if_requested
     key      = 'copied-objects-inherit-acl'
     copy_key = key + '2'
     S3Object.store(key, 'value does not matter', TEST_BUCKET)
@@ -328,7 +328,7 @@ class RemoteS3ObjectTest < Test::Unit::TestCase
     acl = S3Object.acl(key, TEST_BUCKET)
     assert_equal 3, acl.grants.size
     
-    S3Object.copy(key, copy_key, TEST_BUCKET)
+    S3Object.copy(key, copy_key, TEST_BUCKET, :copy_acl => true)
     copied_object = S3Object.find(copy_key, TEST_BUCKET)
     assert_equal acl.grants, copied_object.acl.grants
   ensure

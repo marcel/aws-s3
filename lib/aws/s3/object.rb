@@ -178,13 +178,15 @@ module AWS
           end
         end
         
-        # Makes a copy of the object with <tt>key</tt> to <tt>copy_name</tt>.
+        # Makes a copy of the object with <tt>key</tt> to <tt>copy_key</tt>, preserving the ACL of the existing object if the <tt>:copy_acl</tt> option is true (default false).
         def copy(key, copy_key, bucket = nil, options = {})
           bucket          = bucket_name(bucket)
-          original        = open(url_for(key, bucket))
-          default_options = {:content_type => original.content_type}
-          store(copy_key, original, bucket, default_options.merge(options))
-          acl(copy_key, bucket, acl(key, bucket))
+          source_key      = path!(bucket, key)
+          default_options = {'x-amz-copy-source' => source_key}
+          target_key      = path!(bucket, copy_key)
+          returning put(target_key, default_options) do
+            acl(copy_key, bucket, acl(key, bucket)) if options[:copy_acl]
+          end
         end
         
         # Rename the object with key <tt>from</tt> to have key in <tt>to</tt>.
