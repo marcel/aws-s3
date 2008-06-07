@@ -111,7 +111,7 @@ namespace :dist do
   
   desc 'Tag release'
   task :tag do
-    sh %(git tag -a #{spec.version}-release && git push --tags")
+    sh %(git tag -a '#{spec.version}-release' -m 'Tagging #{spec.version} release' && git push --tags")
   end
   
   desc 'Update changelog to include a release marker'
