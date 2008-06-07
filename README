@@ -128,7 +128,7 @@ You can store an object on S3 by specifying a key, its data and the name of the 
   S3Object.store('me.jpg', open('headshot.jpg'), 'photos')
 
 The content type of the object will be inferred by its extension. If the appropriate content type can not be inferred, S3 defaults
-to <tt>binary/octect-stream</tt>.
+to <tt>binary/octet-stream</tt>.
 
 If you want to override this, you can explicitly indicate what content type the object should have with the <tt>:content_type</tt> option:
 
@@ -202,7 +202,7 @@ A bevie of information about an object can be had using the <tt>about</tt> metho
 
   pp song.about
   {"last-modified"    => "Sat, 28 Oct 2006 21:29:26 GMT",
-   "content-type"     => "binary/octect-stream",
+   "content-type"     => "binary/octet-stream",
    "etag"             => "\"dc629038ffc674bee6f62eb64ff3a\"",
    "date"             => "Sat, 28 Oct 2006 21:30:41 GMT",
    "x-amz-request-id" => "B7BC68F55495B1C8",
