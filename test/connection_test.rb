@@ -106,7 +106,7 @@ class ConnectionTest < Test::Unit::TestCase
   end
   
   def test_request_only_escapes_the_path_the_first_time_it_runs_and_not_subsequent_times
-    connection = Connection.new(@keys)
+    connection     = Connection.new(@keys)
     unescaped_path = 'path with spaces'
     escaped_path   = 'path%20with%20spaces'
     
@@ -114,6 +114,14 @@ class ConnectionTest < Test::Unit::TestCase
     flexmock(connection.http).should_receive(:request).and_raise(Errno::EPIPE).ordered
     flexmock(connection.http).should_receive(:request).ordered
     connection.request :put, unescaped_path
+  end
+  
+  def test_if_request_has_no_body_then_the_content_length_is_set_to_zero
+    # References bug: http://rubyforge.org/tracker/index.php?func=detail&aid=13052&group_id=2409&atid=9356
+    connection = Connection.new(@keys)
+    flexmock(Net::HTTP::Put).new_instances.should_receive(:content_length=).once.with(0).ordered
+    flexmock(connection.http).should_receive(:request).once.ordered
+    connection.request :put, 'path does not matter'
   end
 end
 

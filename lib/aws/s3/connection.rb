@@ -34,11 +34,13 @@ module AWS
           authenticate!(request)
           if body
             if body.respond_to?(:read)                                                                
-              request.body_stream    = body                                                           
-              request.content_length = body.respond_to?(:lstat) ? body.lstat.size : body.size         
+              request.body_stream = body                                                           
             else                                                                                      
               request.body = body                                                                     
-            end                                                                                       
+            end
+            request.content_length = body.respond_to?(:lstat) ? body.lstat.size : body.size         
+          else
+            request.content_length = 0                                                                                       
           end
           http.request(request, &block)
         end
