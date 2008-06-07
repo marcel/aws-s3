@@ -54,4 +54,21 @@ class BucketTest < Test::Unit::TestCase
     bucket = Bucket.find('marcel_molina')
     assert bucket.is_truncated    
   end
+  
+  def test_bucket_name_should_have_leading_slash_prepended_only_once_when_forcing_a_delete
+    # References bug: http://rubyforge.org/tracker/index.php?func=detail&aid=19158&group_id=2409&atid=9356
+    bucket_name          = 'foo'
+    expected_bucket_path = "/#{bucket_name}"
+    
+    mock_bucket = flexmock('Mock bucket') do |mock|
+      mock.should_receive(:delete_all).once
+    end
+    mock_response = flexmock('Mock delete response') do |mock|
+      mock.should_receive(:success?).once
+    end
+    
+    flexmock(Bucket).should_receive(:find).with(bucket_name).once.and_return(mock_bucket)
+    flexmock(Base).should_receive(:delete).with(expected_bucket_path).once.and_return(mock_response)
+    Bucket.delete(bucket_name, :force => true)
+  end
 end

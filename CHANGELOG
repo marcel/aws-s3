@@ -1,5 +1,7 @@
 trunk:
 
+- Bug #19158 fixed. Don't prepend leading slash onto bucket name when deleting a bucket with the :force => true option.
+
 - Bug #17628 fixed. Don't ignore :use_ssl => false in url_for when the connection is established over ssl. Reported by [Tom Fixed (tkat11)]
 
 - Bug #13052 fixed. Appease some proxies by always including a Content-Length with all requests. Reported by [James Murty (jmurty)]

@@ -157,11 +157,10 @@ module AWS
         #
         # Only the owner of a bucket can delete a bucket, regardless of the bucket's access control policy.
         def delete(name = nil, options = {})
-          name = path(name)
           find(name).delete_all if options[:force]
-          # A bit confusing. Calling super actually makes makes an HTTP DELETE request. The delete method is
-          # defined in the Base class. It happens to have the same name.
-          super(name).success?
+          
+          name = path(name)
+          Base.delete(name).success?
         end
         
         # List all your buckets. This is a convenient wrapper around AWS::S3::Service.buckets.
