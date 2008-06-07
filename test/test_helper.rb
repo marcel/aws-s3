@@ -1,9 +1,12 @@
 require 'test/unit'
 $:.unshift File.dirname(__FILE__) + '/../lib'
 require 'aws/s3'
-require File.dirname(__FILE__) + '/mocks/base'
+require File.dirname(__FILE__) + '/mocks/fake_response'
 require File.dirname(__FILE__) + '/fixtures'
-require_library_or_gem 'breakpoint'
+require_library_or_gem 'ruby-debug'
+require_library_or_gem 'flexmock'
+require_library_or_gem 'flexmock/test_unit'
+
 
 # Data copied from http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTAuthentication.html
 module AmazonDocExampleData
@@ -82,5 +85,23 @@ class Test::Unit::TestCase
   
   def sample_proxy_settings
     {:host => 'http://google.com', :port => 8080, :user => 'marcel', :password => 'secret'}
+  end
+  
+  def mock_connection_for(klass, options = {})
+    data = options[:returns]
+    return_values = case data
+    when Hash
+      FakeResponse.new(data)
+    when Array
+      data.map {|hash| FakeResponse.new(hash)}
+    else
+      abort "Response data for mock connection must be a Hash or an Array. Was #{data.inspect}."
+    end
+    
+    connection = flexmock('Mock connection') do |mock|
+      mock.should_receive(:request).and_return(*return_values).at_least.once
+    end
+
+    flexmock(klass).should_receive(:connection).and_return(connection)
   end
 end

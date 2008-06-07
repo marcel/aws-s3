@@ -15,30 +15,27 @@ class BucketTest < Test::Unit::TestCase
   end
   
   def test_empty_bucket
-    Bucket.request_always_returns :body => Fixtures::Buckets.empty_bucket, :code => 200 do
-      bucket = Bucket.find('marcel_molina')
-      assert bucket.empty?
-    end
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Buckets.empty_bucket, :code => 200})
+    bucket = Bucket.find('marcel_molina')
+    assert bucket.empty?
   end
   
   def test_bucket_with_one_file
-    Bucket.request_always_returns :body => Fixtures::Buckets.bucket_with_one_key, :code => 200 do
-      bucket = Bucket.find('marcel_molina')
-      assert !bucket.empty?
-      assert_equal 1, bucket.size
-      assert_equal %w(tongue_overload.jpg), bucket.objects.map {|object| object.key}
-      assert bucket['tongue_overload.jpg']
-    end
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Buckets.bucket_with_one_key, :code => 200})
+    bucket = Bucket.find('marcel_molina')
+    assert !bucket.empty?
+    assert_equal 1, bucket.size
+    assert_equal %w(tongue_overload.jpg), bucket.objects.map {|object| object.key}
+    assert bucket['tongue_overload.jpg']
   end
   
   def test_bucket_with_more_than_one_file
-    Bucket.request_always_returns :body => Fixtures::Buckets.bucket_with_more_than_one_key, :code => 200 do
-      bucket = Bucket.find('marcel_molina')
-      assert !bucket.empty?
-      assert_equal 2, bucket.size
-      assert_equal %w(beluga_baby.jpg tongue_overload.jpg), bucket.objects.map {|object| object.key}.sort
-      assert bucket['tongue_overload.jpg']
-    end
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Buckets.bucket_with_more_than_one_key, :code => 200})
+    bucket = Bucket.find('marcel_molina')
+    assert !bucket.empty?
+    assert_equal 2, bucket.size
+    assert_equal %w(beluga_baby.jpg tongue_overload.jpg), bucket.objects.map {|object| object.key}.sort
+    assert bucket['tongue_overload.jpg']
   end
   
   def test_bucket_path

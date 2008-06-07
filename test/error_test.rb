@@ -54,22 +54,20 @@ class ErrorTest < Test::Unit::TestCase
   end
   
   def test_error_response_handles_attributes_with_no_value
-    Bucket.in_test_mode do
-      Bucket.request_returns :body => Fixtures::Errors.error_with_no_message, :code => 500
-      
-      begin
-        Bucket.create('foo', 'invalid-argument' => 'bad juju')
-      rescue ResponseError => error
-      end
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Errors.error_with_no_message, :code => 500})
     
-      assert_nothing_raised do
-        error.response.error.message
-      end
-      assert_nil error.response.error.message
-      
-      assert_raises(NoMethodError) do
-        error.response.error.non_existant_method
-      end
+    begin
+      Bucket.create('foo', 'invalid-argument' => 'bad juju')
+    rescue ResponseError => error
+    end
+  
+    assert_nothing_raised do
+      error.response.error.message
+    end
+    assert_nil error.response.error.message
+    
+    assert_raises(NoMethodError) do
+      error.response.error.non_existant_method
     end
   end
 end

@@ -7,25 +7,23 @@ class ObjectTest < Test::Unit::TestCase
   end
   
   def test_header_settings_reader_and_writer
-    S3Object.in_test_mode do
-      headers = {'content-type' => 'text/plain'}
-      S3Object.request_returns :headers => headers
-      
-      assert_nothing_raised do
-        @object.content_type
-      end
+    headers = {'content-type' => 'text/plain'}
+    mock_connection_for(S3Object, :returns => {:headers => headers})
     
-      assert_equal 'text/plain', @object.content_type
-    
-      assert_nothing_raised do
-        @object.content_type = 'image/jpg'
-      end
-    
-      assert_equal 'image/jpg', @object.content_type
-    
-      assert_raises(NoMethodError) do
-        @object.non_existant_header_setting
-      end
+    assert_nothing_raised do
+      @object.content_type
+    end
+  
+    assert_equal 'text/plain', @object.content_type
+  
+    assert_nothing_raised do
+      @object.content_type = 'image/jpg'
+    end
+  
+    assert_equal 'image/jpg', @object.content_type
+  
+    assert_raises(NoMethodError) do
+      @object.non_existant_header_setting
     end
   end
   
@@ -75,91 +73,81 @@ class ObjectTest < Test::Unit::TestCase
   end
   
   def test_fetching_object_value_generates_value_object
-    S3Object.in_test_mode do
-      S3Object.request_returns :body => 'hello!'
-      value = S3Object.value('foo', 'bar')
-      assert_kind_of S3Object::Value, value
-      assert_equal 'hello!', value
-    end
+    mock_connection_for(S3Object, :returns => {:body => 'hello!'})
+    value = S3Object.value('foo', 'bar')
+    assert_kind_of S3Object::Value, value
+    assert_equal 'hello!', value
   end
   
   def test_fetching_file_by_name_raises_when_heuristic_fails
-    S3Object.request_always_returns :body => Fixtures::Buckets.bucket_with_one_key do
-      assert_raises(NoSuchKey) do
-        S3Object.find('not_tongue_overload.jpg', 'marcel_molina')
-      end
-      
-      object = nil # Block scoping
-      assert_nothing_raised do
-        object = S3Object.find('tongue_overload.jpg', 'marcel_molina')
-      end
-      assert_kind_of S3Object, object
-      assert_equal 'tongue_overload.jpg', object.key
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Buckets.bucket_with_one_key})
+    assert_raises(NoSuchKey) do
+      S3Object.find('not_tongue_overload.jpg', 'marcel_molina')
     end
+    
+    object = nil # Block scoping
+    assert_nothing_raised do
+      object = S3Object.find('tongue_overload.jpg', 'marcel_molina')
+    end
+    assert_kind_of S3Object, object
+    assert_equal 'tongue_overload.jpg', object.key
   end
   
   def test_about
-    S3Object.in_test_mode do
-      headers = {'content-size' => '12345', 'date' => Time.now.httpdate, 'content-type' => 'application/xml'}
-      S3Object.request_returns :headers => headers
-      about = S3Object.about('foo', 'bar')
-      assert_kind_of S3Object::About, about
-      assert_equal headers, about
-      
-      S3Object.request_returns :code => 404
-      assert_raises(NoSuchKey) do
-        S3Object.about('foo', 'bar')
-      end
+    headers = {'content-size' => '12345', 'date' => Time.now.httpdate, 'content-type' => 'application/xml'}
+    mock_connection_for(S3Object, :returns => [
+      {:headers => headers},
+      {:code    => 404}
+      ]
+    )
+    about = S3Object.about('foo', 'bar')
+    assert_kind_of S3Object::About, about
+    assert_equal headers, about
+    
+    assert_raises(NoSuchKey) do
+      S3Object.about('foo', 'bar')
     end
   end
   
-  def test_exists?
-    S3Object.in_test_mode do
-      S3Object.request_returns :code => 404
-      assert_equal false, S3Object.exists?('foo', 'bar')
-      
-      S3Object.request_returns :code => 200
-      assert_equal true, S3Object.exists?('foo', 'bar')
-    end
+  def test_can_tell_that_an_s3object_does_not_exist
+    mock_connection_for(S3Object, :returns => {:code => 404})
+    assert_equal false, S3Object.exists?('foo', 'bar')
+  end
+  
+  def test_can_tell_that_an_s3object_exists
+    mock_connection_for(S3Object, :returns => {:code => 200})
+    assert_equal true, S3Object.exists?('foo', 'bar')
   end
   
   def test_s3object_equality
-    Bucket.in_test_mode do
-      Bucket.request_returns :body => Fixtures::Buckets.bucket_with_more_than_one_key
-      file1, file2 = Bucket.objects('does not matter')
-      assert file1 == file1
-      assert file2 == file2
-      assert !(file1 == file2) # /!\ Parens required /!\
-    end
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Buckets.bucket_with_more_than_one_key})
+    file1, file2 = Bucket.objects('does not matter')
+    assert file1 == file1
+    assert file2 == file2
+    assert !(file1 == file2) # /!\ Parens required /!\
   end
   
   def test_inspect
-    S3Object.in_test_mode do
-      S3Object.request_returns :body => Fixtures::Buckets.bucket_with_one_key
-      object = S3Object.find('tongue_overload.jpg', 'bucket does not matter')
-      assert object.path
-      assert_nothing_raised { object.inspect }
-      assert object.inspect[object.path]
-   end
- end
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Buckets.bucket_with_one_key})
+    object = S3Object.find('tongue_overload.jpg', 'bucket does not matter')
+    assert object.path
+    assert_nothing_raised { object.inspect }
+    assert object.inspect[object.path]
+  end
  
- def test_etag
-  S3Object.in_test_mode do
-    S3Object.request_returns :body => Fixtures::Buckets.bucket_with_one_key
+  def test_etag
+    mock_connection_for(Bucket, :returns => {:body => Fixtures::Buckets.bucket_with_one_key})
     file = S3Object.find('tongue_overload.jpg', 'bucket does not matter')
     assert file.etag
     assert_equal 'f21f7c4e8ea6e34b268887b07d6da745', file.etag
   end
- end
  
- def test_fetching_information_about_an_object_that_does_not_exist_raises_no_such_key
-   S3Object.in_test_mode do
-     S3Object.request_returns :body => '', :code => 404
-     assert_raises(NoSuchKey) do
-       S3Object.about('asdfasdfasdfas-this-does-not-exist', 'bucket does not matter')
-     end
-   end
- end
+  def test_fetching_information_about_an_object_that_does_not_exist_raises_no_such_key
+    mock_connection_for(S3Object, :returns => {:body => '', :code => 404})
+    assert_raises(NoSuchKey) do
+      S3Object.about('asdfasdfasdfas-this-does-not-exist', 'bucket does not matter')
+    end
+  end
 end
 
 class MetadataTest < Test::Unit::TestCase

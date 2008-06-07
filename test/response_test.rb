@@ -34,11 +34,9 @@ end
 
 class S3ObjectResponseTest < Test::Unit::TestCase
   def test_etag_extracted
-    S3Object.in_test_mode do
-      S3Object.request_returns :headers => {"etag"=>"\"acbd18db4cc2f85cedef654fccc4a4d8\""}
-      object_response = S3Object.create('name_does_not_matter', 'data does not matter', 'bucket does not matter')
-      assert_equal "acbd18db4cc2f85cedef654fccc4a4d8", object_response.etag 
-    end
+    mock_connection_for(S3Object, :returns => {:headers => {"etag" => %("acbd18db4cc2f85cedef654fccc4a4d8")}}).once
+    object_response = S3Object.create('name_does_not_matter', 'data does not matter', 'bucket does not matter')
+    assert_equal "acbd18db4cc2f85cedef654fccc4a4d8", object_response.etag 
   end
 end
 

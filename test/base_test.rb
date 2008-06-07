@@ -23,58 +23,52 @@ class BaseTest < Test::Unit::TestCase
   end
   
   def test_request_tries_again_when_encountering_an_internal_error
-    Bucket.in_test_mode do
-      Bucket.request_returns [
-        # First request is an internal error
-        {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
-        # Second request is a success
-        {:body => Fixtures::Buckets.empty_bucket,  :code => 200}
-      ]
-      bucket = nil # Block scope hack
-      assert_nothing_raised do
-        bucket = Bucket.find('marcel')
-      end
-      # Don't call objects 'cause we don't want to make another request
-      assert bucket.object_cache.empty?
-    end    
+    mock_connection_for(Bucket, :returns => [
+      # First request is an internal error
+      {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
+      # Second request is a success
+      {:body => Fixtures::Buckets.empty_bucket,  :code => 200}
+    ])
+    bucket = nil # Block scope hack
+    assert_nothing_raised do
+      bucket = Bucket.find('marcel')
+    end
+    # Don't call objects 'cause we don't want to make another request
+    assert bucket.object_cache.empty?
   end
   
   def test_request_tries_up_to_three_times
-    Bucket.in_test_mode do
-      Bucket.request_returns [
-        # First request is an internal error
-        {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
-        # Second request is also an internal error
-        {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
-        # Ditto third
-        {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
-        # Fourth works
-        {:body => Fixtures::Buckets.empty_bucket,  :code => 200}      
-      ]
-      bucket = nil # Block scope hack
-      assert_nothing_raised do
-        bucket = Bucket.find('marcel')
-      end
-      # Don't call objects 'cause we don't want to make another request
-      assert bucket.object_cache.empty?
+    mock_connection_for(Bucket, :returns => [
+      # First request is an internal error
+      {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
+      # Second request is also an internal error
+      {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
+      # Ditto third
+      {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
+      # Fourth works
+      {:body => Fixtures::Buckets.empty_bucket,  :code => 200}
+    ])
+    bucket = nil # Block scope hack
+    assert_nothing_raised do
+      bucket = Bucket.find('marcel')
     end
+    # Don't call objects 'cause we don't want to make another request
+    assert bucket.object_cache.empty?
   end
   
   def test_request_tries_again_three_times_and_gives_up
-    Bucket.in_test_mode do
-      Bucket.request_returns [
-        # First request is an internal error
-        {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
-        # Second request is also an internal error
-        {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
-        # Ditto third
-        {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
-        # Ditto fourth
-        {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
-      ]
-      assert_raises(InternalError) do
-        Bucket.find('marcel')
-      end
+    mock_connection_for(Bucket, :returns => [
+      # First request is an internal error
+      {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
+      # Second request is also an internal error
+      {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
+      # Ditto third
+      {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
+      # Ditto fourth
+      {:body => Fixtures::Errors.internal_error, :code => 500, :error => true},
+    ])
+    assert_raises(InternalError) do
+      Bucket.find('marcel')
     end
   end
 end
