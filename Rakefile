@@ -111,44 +111,46 @@ namespace :dist do
   
   desc 'Tag release'
   task :tag do
-    svn_root = 'svn+ssh://marcel@rubyforge.org/var/svn/amazon/s3'
-    sh %(svn cp #{svn_root}/trunk #{svn_root}/tags/rel-#{spec.version} -m "Tag #{spec.name} release #{spec.version}")
+    sh %(git tag -a #{spec.version}-release && git push --tags")
   end
   
   desc 'Update changelog to include a release marker'
   task :add_release_marker_to_changelog do
     changelog = IO.read('CHANGELOG')
-    changelog.sub!(/^trunk:/, "#{spec.version}:")
+    changelog.sub!(/^head:/, "#{spec.version}:")
     
     open('CHANGELOG', 'w') do |file|
-      file.write "trunk:\n\n#{changelog}"
+      file.write "head:\n\n#{changelog}"
     end
   end
   
   task :commit_changelog do
-    sh %(svn ci CHANGELOG -m "Bump changelog version marker for release")
+    sh %(git commit CHANGELOG -m "Bump changelog version marker for release" && git push)
   end
   
   package_name = lambda {|specification| File.join('pkg', "#{specification.name}-#{specification.version}")}
   
   desc 'Push a release to rubyforge'
-  task :release => [:confirm_release, :clean, :add_release_marker_to_changelog, :package, :commit_changelog, :tag] do 
+  task :release do => [:confirm_release, :clean, :add_release_marker_to_changelog, :package, :commit_changelog, :tag] do 
     require 'rubyforge'
     package = package_name[spec]
 
-    rubyforge = RubyForge.new
+    rubyforge = RubyForge.new.configure
     rubyforge.login
-
+    
+    user_config = rubyforge.userconfig
+    user_config['release_changes'] = YAML.load_file('CHANGELOG')[spec.version.to_s].join("\n")
+  
     version_already_released = lambda do
       releases = rubyforge.autoconfig['release_ids']
-      releases.has_key?(spec.name) && releases[spec.name][spec.version]
+      releases.has_key?(spec.name) && releases[spec.name][spec.version.to_s]
     end
     
     abort("Release #{spec.version} already exists!") if version_already_released.call
     
-    if release_id = rubyforge.add_release(spec.rubyforge_project, spec.name, spec.version, "#{package}.tar.gz")
-      rubyforge.add_file(spec.rubyforge_project, spec.name, release_id, "#{package}.gem")
-    else
+    begin
+      rubyforge.add_release(spec.rubyforge_project, spec.name, spec.version, "#{package}.tar.gz", "#{package}.gem")
+    rescue
       puts 'Release failed!'
     end
   end
