@@ -8,7 +8,7 @@ module AWS
     #   S3Object.store('me.jpg', open('headshot.jpg'), 'photos')
     #
     # The content type of the object will be inferred by its extension. If the appropriate content type can not be inferred, S3 defaults
-    # to <tt>binary/octect-stream</tt>.
+    # to <tt>binary/octet-stream</tt>.
     #
     # If you want to override this, you can explicitly indicate what content type the object should have with the <tt>:content_type</tt> option:
     # 
@@ -82,7 +82,7 @@ module AWS
     # 
     #   pp song.about
     #   {"last-modified"    => "Sat, 28 Oct 2006 21:29:26 GMT",
-    #    "content-type"     => "binary/octect-stream",
+    #    "content-type"     => "binary/octet-stream",
     #    "etag"             => "\"dc629038ffc674bee6f62eb64ff3a\"",
     #    "date"             => "Sat, 28 Oct 2006 21:30:41 GMT",
     #    "x-amz-request-id" => "B7BC68F55495B1C8",
@@ -496,7 +496,7 @@ module AWS
       #   pp some_object.about
       #     {"last-modified"    => "Sat, 28 Oct 2006 21:29:26 GMT",
       #      "x-amz-id-2"       =>  "LdcQRk5qLwxJQiZ8OH50HhoyKuqyWoJ67B6i+rOE5MxpjJTWh1kCkL+I0NQzbVQn",
-      #      "content-type"     => "binary/octect-stream",
+      #      "content-type"     => "binary/octet-stream",
       #      "etag"             => "\"dc629038ffc674bee6f62eb68454ff3a\"",
       #      "date"             => "Sat, 28 Oct 2006 21:30:41 GMT",
       #      "x-amz-request-id" => "B7BC68F55495B1C8",
@@ -504,7 +504,7 @@ module AWS
       #      "content-length"   => "3418766"}
       #
       #  some_object.content_type
-      #  # => "binary/octect-stream"
+      #  # => "binary/octet-stream"
       #  some_object.content_type = 'audio/mpeg'
       #  some_object.content_type
       #  # => 'audio/mpeg'
