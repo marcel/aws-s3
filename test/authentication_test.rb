@@ -30,7 +30,25 @@ class QueryStringAuthenticationTest < Test::Unit::TestCase
     query_string = Authentication::QueryString.new(request, key_id, secret, :expires => expires)
     assert_equal expires, query_string.send(:canonical_string).instance_variable_get(:@options)[:expires]
     assert_equal AmazonDocExampleData::Example3.query_string, query_string
-  end    
+  end
+  
+  def test_expires_in_is_coerced_to_being_an_integer_in_case_it_is_a_special_integer_proxy
+    # References bug: http://rubyforge.org/tracker/index.php?func=detail&aid=17458&group_id=2409&atid=9356
+    integer_proxy = Class.new do
+      attr_reader :integer
+      def initialize(integer)
+        @integer = integer
+      end
+      
+      def to_int
+        integer
+      end
+    end
+    
+    actual_integer = 25
+    query_string = Authentication::QueryString.new(request, key_id, secret, :expires_in => integer_proxy.new(actual_integer))
+    assert_equal actual_integer, query_string.send(:expires_in)
+  end
   
   private
     def request; AmazonDocExampleData::Example3.request end
