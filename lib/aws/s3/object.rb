@@ -107,10 +107,10 @@ module AWS
     #   pp song.metadata
     #   {"x-amz-meta-released" => "2005", 
     #     "x-amz-meta-album"   => "A River Ain't Too Much To Love"}
-    #   song.metada[:released]
+    #   song.metadata[:released]
     #   # => "2005"
-    #   song.metada[:released] = 2006
-    #   pp song.metada
+    #   song.metadata[:released] = 2006
+    #   pp song.metadata
     #   {"x-amz-meta-released" => 2006, 
     #    "x-amz-meta-album"    => "A River Ain't Too Much To Love"}
     class S3Object < Base
