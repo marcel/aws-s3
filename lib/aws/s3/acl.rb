@@ -385,7 +385,7 @@ module AWS
       class Grantee
         include SelectiveAttributeProxy #:nodoc:
         
-        undef_method :id # Get rid of Object#id
+        undef_method :id if method_defined?(:id) # Get rid of Object#id
         
         def initialize(attributes = {})
           # Set default values for attributes that may not be passed in but we still want the object

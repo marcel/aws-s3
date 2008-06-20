@@ -7,7 +7,7 @@ module AWS
     #
     # You can retrieve the owner of the current account by calling Owner.current.
     class Owner
-      undef_method :id # Get rid of Object#id
+      undef_method :id if method_defined?(:id) # Get rid of Object#id
       include SelectiveAttributeProxy
       
       class << self
