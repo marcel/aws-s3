@@ -151,7 +151,7 @@ namespace :dist do
     abort("Release #{spec.version} already exists!") if version_already_released.call
     
     begin
-      rubyforge.add_release(spec.rubyforge_project, spec.name, spec.version, "#{package}.tar.gz", "#{package}.gem")
+      rubyforge.add_release(spec.rubyforge_project, spec.name, spec.version.to_s, "#{package}.tar.gz", "#{package}.gem")
       puts "Version #{spec.version} released!"
     rescue Exception => exception
       puts 'Release failed!'
