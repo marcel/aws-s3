@@ -4,6 +4,8 @@ head:
 
 0.5.1:
 
+0.5.1:
+
 - For now just redefine __method__ to take arguments so we don't break 1.8.7 use today
 
 0.5.0:
