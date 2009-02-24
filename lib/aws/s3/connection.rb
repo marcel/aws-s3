@@ -249,73 +249,28 @@ module AWS
       end
         
       class Options < Hash #:nodoc:
-        class << self
-          def valid_options
-            [:access_key_id, :secret_access_key, :server, :port, :use_ssl, :persistent, :proxy]
-          end
-        end
+        VALID_OPTIONS = [:access_key_id, :secret_access_key, :server, :port, :use_ssl, :persistent, :proxy].freeze
         
-        attr_reader :options
         def initialize(options = {})
           super()
-          @options = options
-          validate!
-          extract_proxy_settings!
-          extract_persistent!
-          extract_server!
-          extract_port!
-          extract_remainder!
+          validate(options)
+          replace(:server => DEFAULT_HOST, :port => (options[:use_ssl] ? 443 : 80))
+          merge!(options)
         end
-        
+
         def connecting_through_proxy?
           !self[:proxy].nil?
         end
         
         def proxy_settings
-          proxy_setting_keys.map do |proxy_key| 
-            self[:proxy][proxy_key]
-          end
+          self[:proxy].values_at(:host, :port, :user, :password)
         end
         
         private
-          def proxy_setting_keys
-            [:host, :port, :user, :password]
-          end
-          
-          def missing_proxy_settings?
-            !self[:proxy].keys.include?(:host)
-          end
-          
-          def extract_persistent!
-            self[:persistent] = options.has_key?(:persitent) ? options[:persitent] : false
-          end
-          
-          def extract_proxy_settings!
-            self[:proxy] = options.delete(:proxy) if options.include?(:proxy)
-            validate_proxy_settings!
-          end
-          
-          def extract_server!
-            self[:server] = options.delete(:server) || DEFAULT_HOST
-          end
-
-          def extract_port!
-            self[:port] = options.delete(:port) || (options[:use_ssl] ? 443 : 80)
-          end
-          
-          def extract_remainder!
-            update(options)
-          end
-          
-          def validate!
-            invalid_options = options.keys.select {|key| !self.class.valid_options.include?(key)}
+          def validate(options)
+            invalid_options = options.keys - VALID_OPTIONS
             raise InvalidConnectionOption.new(invalid_options) unless invalid_options.empty?
-          end
-          
-          def validate_proxy_settings!
-            if connecting_through_proxy? && missing_proxy_settings?
-              raise ArgumentError, "Missing proxy settings. Must specify at least :host."
-            end
+            raise ArgumentError, "Missing proxy settings. Must specify at least :host." if options[:proxy] && !options[:proxy][:host]
           end
       end
     end

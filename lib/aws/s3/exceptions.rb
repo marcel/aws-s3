@@ -58,7 +58,7 @@ module AWS
     class InvalidConnectionOption < InvalidOption
       def initialize(invalid_options)
         message = "The following connection options are invalid: #{invalid_options.join(', ')}. "    +
-                  "The valid connection options are: #{Connection::Options.valid_options.join(', ')}."
+                  "The valid connection options are: #{Connection::Options::VALID_OPTIONS.join(', ')}."
         super(message)
       end
     end

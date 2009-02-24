@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/test_helper'
 class ConnectionTest < Test::Unit::TestCase
   attr_reader :keys
   def setup
-    @keys = {:access_key_id => '123', :secret_access_key => 'abc'}
+    @keys = {:access_key_id => '123', :secret_access_key => 'abc'}.freeze
   end
   
   def test_creating_a_connection
@@ -207,7 +207,6 @@ class ConnectionOptionsTest < Test::Unit::TestCase
   private
     def assert_key_transfered(key, value, options)
       assert_equal value, options[key]
-      assert !options.instance_variable_get('@options').has_key?(key)
     end
       
     def generate_options(options = {})
