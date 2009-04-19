@@ -2,7 +2,10 @@ require 'test/unit'
 require 'uri'
 $:.unshift File.dirname(__FILE__) + '/../../lib'
 require 'aws/s3'
-require_library_or_gem 'breakpoint'
+begin
+  require_library_or_gem 'breakpoint'
+rescue LoadError
+end
 
 TEST_BUCKET = 'aws-s3-tests'
 TEST_FILE   = File.dirname(__FILE__) + '/test_file.data'

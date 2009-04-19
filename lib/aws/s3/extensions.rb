@@ -26,9 +26,16 @@ class Hash
 end
 
 class String
-  def previous!
-    self[-1] -= 1
-    self
+  if RUBY_VERSION <= '1.9'
+    def previous!
+      self[-1] -= 1
+      self
+    end
+  else
+    def previous!
+      self[-1] = (self[-1].ord - 1).chr
+      self
+    end
   end
   
   def previous
@@ -48,17 +55,34 @@ class String
       tr("-", "_").downcase
   end unless public_method_defined? :underscore
 
-  def utf8?
-    scan(/[^\x00-\xa0]/u) { |s| s.unpack('U') }
-    true
-  rescue ArgumentError
-    false
+  if RUBY_VERSION >= '1.9'
+    def valid_utf8?
+      dup.force_encoding('UTF-8').valid_encoding?
+    end
+  else
+    def valid_utf8?
+      scan(Regexp.new('[^\x00-\xa0]', nil, 'u')) { |s| s.unpack('U') }
+      true
+    rescue ArgumentError
+      false
+    end
   end
   
   # All paths in in S3 have to be valid unicode so this takes care of 
-  # cleaning up any strings that aren't valid utf-8 according to String#utf8?
-  def remove_extended!
-    gsub!(/[\x80-\xFF]/) { "%02X" % $&[0] }
+  # cleaning up any strings that aren't valid utf-8 according to String#valid_utf8?
+  if RUBY_VERSION >= '1.9'
+    def remove_extended!
+      sanitized_string = ''
+      each_byte do |byte|
+        character = byte.chr
+        sanitized_string << character if character.ascii_only?
+      end
+      sanitized_string
+    end
+  else
+    def remove_extended!
+      gsub!(/[\x80-\xFF]/) { "%02X" % $&[0] }
+    end
   end
   
   def remove_extended
@@ -75,11 +99,11 @@ class CoercibleString < String
   
   def coerce
     case self
-    when 'true':          true
-    when 'false':         false
+    when 'true';         true
+    when 'false';         false
     # Don't coerce numbers that start with zero
-    when  /^[1-9]+\d*$/:   Integer(self)
-    when datetime_format: Time.parse(self)
+    when  /^[1-9]+\d*$/;   Integer(self)
+    when datetime_format; Time.parse(self)
     else
       self
     end
@@ -103,10 +127,15 @@ end
 module Kernel
   def __method__(depth = 0)
     caller[depth][/`([^']+)'/, 1]
-  end #if RUBY_VERSION < '1.8.7'
+  end if RUBY_VERSION < '1.8.7'
+  
+  def __called_from__
+    caller[1][/`([^']+)'/, 1]
+  end if RUBY_VERSION > '1.8.7'
   
   def memoize(reload = false, storage = nil)
-    storage = "@#{storage || __method__(1)}"
+    current_method = RUBY_VERSION >= '1.8.7' ? __called_from__ : __method__(1)
+    storage = "@#{storage || current_method}"
     if reload 
       instance_variable_set(storage, nil)
     else
@@ -117,7 +146,10 @@ module Kernel
     instance_variable_set(storage, yield)
   end
 
-  def require_library_or_gem(library)
+  def require_library_or_gem(library, gem_name = nil)
+    if RUBY_VERSION >= '1.9'
+      gem(gem_name || library, '>=0') 
+    end
     require library
   rescue LoadError => library_not_installed
     begin

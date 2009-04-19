@@ -7,7 +7,7 @@ module AWS
         end
         
         def prepare_path(path)
-          path = path.remove_extended unless path.utf8?
+          path = path.remove_extended unless path.valid_utf8?
           URI.escape(path)
         end
       end

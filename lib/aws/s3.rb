@@ -1,4 +1,3 @@
-require 'base64'
 require 'cgi'
 require 'uri'
 require 'openssl'
@@ -11,7 +10,7 @@ require 'open-uri'
 $:.unshift(File.dirname(__FILE__))
 require 's3/extensions'
 require_library_or_gem 'builder' unless defined? Builder
-require_library_or_gem 'mime/types' unless defined? MIME::Types
+require_library_or_gem 'mime/types', 'mime-types' unless defined? MIME::Types
 
 require 's3/base'
 require 's3/version'
@@ -43,7 +42,7 @@ AWS::S3::S3Object.class_eval do
   include AWS::S3::BitTorrent
 end
 
-require_library_or_gem 'xmlsimple' unless defined? XmlSimple
+require_library_or_gem 'xmlsimple', 'xml-simple' unless defined? XmlSimple
 # If libxml is installed, we use the FasterXmlSimple library, that provides most of the functionality of XmlSimple
 # except it uses the xml/libxml library for xml parsing (rather than REXML). If libxml isn't installed, we just fall back on
 # XmlSimple.

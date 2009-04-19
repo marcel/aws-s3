@@ -65,14 +65,14 @@ class StringExtensionsTest < Test::Unit::TestCase
     end
   end
   
-  def test_utf8?
-    assert !"318597/620065/GTL_75\24300_A600_A610.zip".utf8?
-    assert "318597/620065/GTL_75£00_A600_A610.zip".utf8?
+  def test_valid_utf8?
+    assert !"318597/620065/GTL_75\24300_A600_A610.zip".valid_utf8?
+    assert "318597/620065/GTL_75£00_A600_A610.zip".valid_utf8?
   end
   
   def test_remove_extended
-    assert "318597/620065/GTL_75\24300_A600_A610.zip".remove_extended.utf8?
-    assert "318597/620065/GTL_75£00_A600_A610.zip".remove_extended.utf8?
+    assert "318597/620065/GTL_75\24300_A600_A610.zip".remove_extended.valid_utf8?
+    assert "318597/620065/GTL_75£00_A600_A610.zip".remove_extended.valid_utf8?
   end
 end
 
@@ -139,7 +139,7 @@ class KerneltExtensionsTest < Test::Unit::TestCase
     assert_equal 'foo', b.foo
     assert_equal 'bar', b.bar
   end
-end
+end if RUBY_VERSION < '1.8.7'
 
 class ModuleExtensionsTest < Test::Unit::TestCase
   class Foo
@@ -166,10 +166,10 @@ class ModuleExtensionsTest < Test::Unit::TestCase
   end
   
   def test_memoize
-    assert !@instance.instance_variables.include?('@foo')
+    assert !instance_variables_of(@instance).include?('@foo')
     cached_result = @instance.foo
     assert_equal cached_result, @instance.foo
-    assert @instance.instance_variables.include?('@foo')
+    assert instance_variables_of(@instance).include?('@foo')
     assert_equal cached_result, @instance.send(:instance_variable_get, :@foo)
     assert_not_equal cached_result, new_cache = @instance.foo(:reload)
     assert_equal new_cache, @instance.foo
@@ -177,21 +177,21 @@ class ModuleExtensionsTest < Test::Unit::TestCase
   end
   
   def test_customizing_memoize_storage
-    assert !@instance.instance_variables.include?('@bar')
-    assert !@instance.instance_variables.include?('@baz')
+    assert !instance_variables_of(@instance).include?('@bar')
+    assert !instance_variables_of(@instance).include?('@baz')
     cached_result = @instance.bar
-    assert !@instance.instance_variables.include?('@bar')
-    assert @instance.instance_variables.include?('@baz')
+    assert !instance_variables_of(@instance).include?('@bar')
+    assert instance_variables_of(@instance).include?('@baz')
     assert_equal cached_result, @instance.bar
     assert_equal cached_result, @instance.send(:instance_variable_get, :@baz)
     assert_nil @instance.send(:instance_variable_get, :@bar)
   end
   
   def test_memoized
-    assert !@instance.instance_variables.include?('@quux')
+    assert !instance_variables_of(@instance).include?('@quux')
     cached_result = @instance.quux
     assert_equal cached_result, @instance.quux
-    assert @instance.instance_variables.include?('@quux')
+    assert instance_variables_of(@instance).include?('@quux')
     assert_equal cached_result, @instance.send(:instance_variable_get, :@quux)
     assert_not_equal cached_result, new_cache = @instance.quux(:reload)
     assert_equal new_cache, @instance.quux
@@ -220,6 +220,15 @@ class ModuleExtensionsTest < Test::Unit::TestCase
     assert_equal 'bar', some_module::FOO
     assert_equal 'bar', some_module.foo
   end
+  
+  private
+    # For 1.9 compatibility
+    def instance_variables_of(object)
+      object.instance_variables.map do |instance_variable|
+        instance_variable.to_s
+      end
+    end
+      
 end
 
 class AttributeProxyTest < Test::Unit::TestCase

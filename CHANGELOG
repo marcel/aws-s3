@@ -1,8 +1,6 @@
 head:
 
-0.5.1:
-
-0.5.1:
+- Full 1.9 compatibility (all tests passing against 1.9 & 1.8.6). Thanks to [David (dvdplm@gmail.com), Cyril David (cyx.ucron@gmail.com)]
 
 0.5.1:
 

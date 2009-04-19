@@ -58,7 +58,7 @@ class LogLineTest < Test::Unit::TestCase
     expected_results = {
       :owner            => Owner.new('id' => 'bb2041a25975c3d4ce9775fe9e93e5b77a6a9fad97dc7e00686191f3790b13f1'),
       :bucket           => 'marcel',
-      :time             => Time.parse('11/14/2006 06:36:48 +0000'),
+      :time             => Time.parse('Nov 14 2006 06:36:48 +0000'),
       :remote_ip        => '67.165.183.125',
       :request_id       => '8B5297D428A05432',
       :requestor        => Owner.new('id' => 'bb2041a25975c3d4ce9775fe9e93e5b77a6a9fad97dc7e00686191f3790b13f1'),
