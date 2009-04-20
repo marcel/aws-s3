@@ -1,5 +1,7 @@
 head:
 
+- Rename Kernel#memoize to Kernel#expirable_memoize so that it doesn't conflict with memoize method in ActiveSupport which has an entirely different API and semantics. Reported by [Florian Dütsc (mail@florian-duetsch.de)].
+
 0.6.0:
 
 - Full 1.9 compatibility (all tests passing against 1.9 & 1.8.6). Thanks to [David (dvdplm@gmail.com), Cyril David (cyx.ucron@gmail.com)]
