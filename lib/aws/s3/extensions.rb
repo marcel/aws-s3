@@ -133,7 +133,7 @@ module Kernel
     caller[1][/`([^']+)'/, 1]
   end if RUBY_VERSION > '1.8.7'
   
-  def memoize(reload = false, storage = nil)
+  def expirable_memoize(reload = false, storage = nil)
     current_method = RUBY_VERSION >= '1.8.7' ? __called_from__ : __method__(1)
     storage = "@#{storage || current_method}"
     if reload 
@@ -174,7 +174,7 @@ class Module
     alias_method original_method, method_name
     module_eval(<<-EVAL, __FILE__, __LINE__)
       def #{method_name}(reload = false, *args, &block)
-        memoize(reload) do
+        expirable_memoize(reload) do
           send(:#{original_method}, *args, &block)
         end
       end

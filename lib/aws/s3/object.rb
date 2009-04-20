@@ -485,7 +485,7 @@ module AWS
           reload  = options
           options = {}
         end
-        memoize(reload) do
+        expirable_memoize(reload) do
           self.class.stream(key, bucket.name, options, &block)
         end
       end
@@ -561,7 +561,7 @@ module AWS
       
       def etag(reload = false)
         return nil unless stored?
-        memoize(reload) do
+        expirable_memoize(reload) do
           reload ? about(reload)['etag'][1...-1] : attributes['e_tag'][1...-1]
         end
       end
