@@ -208,7 +208,7 @@ namespace :test do
     
   desc 'Check test coverage'
   task :coverage do
-    system("rcov --sort coverage #{File.join(library_root, 'test/*_test.rb')}")
+    system("rcov -x Library -x support --sort coverage #{File.join(library_root, 'test/*_test.rb')}")
     show_test_coverage_results
   end
   
@@ -224,7 +224,7 @@ namespace :test do
 
   desc 'Check test coverage of full stack remote tests'
   task :full_coverage do
-    system("rcov --sort coverage #{File.join(library_root, 'test/remote/*_test.rb')} #{File.join(library_root, 'test/*_test.rb')}")
+    system("rcov -x Library -x support --sort coverage #{File.join(library_root, 'test/remote/*_test.rb')} #{File.join(library_root, 'test/*_test.rb')}")
     show_test_coverage_results
   end
   
