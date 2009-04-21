@@ -1,5 +1,7 @@
 head:
 
+- Use custom __method__ in Ruby versions *prior* to 1.8.7 not *up to* 1.8.7.
+
 - Rename Kernel#memoize to Kernel#expirable_memoize so that it doesn't conflict with memoize method in ActiveSupport which has an entirely different API and semantics. Reported by [Florian Dütsc (mail@florian-duetsch.de)].
 
 0.6.0:
