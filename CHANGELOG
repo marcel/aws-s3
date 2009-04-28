@@ -2,6 +2,8 @@ head:
 
 0.6.2:
 
+- Apparently need to use custom __method__ in Ruby versions right up to 1.8.7.
+
 0.6.1:
 
 - Use custom __method__ in Ruby versions *prior* to 1.8.7 not *up to* 1.8.7.
