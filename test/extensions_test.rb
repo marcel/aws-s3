@@ -139,7 +139,7 @@ class KerneltExtensionsTest < Test::Unit::TestCase
     assert_equal 'foo', b.foo
     assert_equal 'bar', b.bar
   end
-end if RUBY_VERSION < '1.8.7'
+end if RUBY_VERSION <= '1.8.7'
 
 class ModuleExtensionsTest < Test::Unit::TestCase
   class Foo
