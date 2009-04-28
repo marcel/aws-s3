@@ -131,10 +131,10 @@ module Kernel
   
   def __called_from__
     caller[1][/`([^']+)'/, 1]
-  end if RUBY_VERSION > '1.8.7'
+  end if RUBY_VERSION >= '1.8.7'
   
   def expirable_memoize(reload = false, storage = nil)
-    current_method = RUBY_VERSION > '1.8.7' ? __called_from__ : __method__(1)
+    current_method = RUBY_VERSION >= '1.8.7' ? __called_from__ : __method__(1)
     storage = "@#{storage || current_method}"
     if reload 
       instance_variable_set(storage, nil)
