@@ -191,23 +191,6 @@ class Module
       EVAL
     end
   end
-  
-  # Transforms MarcelBucket into
-  #
-  #   class MarcelBucket < AWS::S3::Bucket
-  #     set_current_bucket_to 'marcel'
-  #   end
-  def const_missing_from_s3_library(sym)
-    if sym.to_s =~ /^(\w+)(Bucket|S3Object)$/
-      const = const_set(sym, Class.new(AWS::S3.const_get($2)))
-      const.current_bucket = $1.underscore
-      const
-    else
-      const_missing_not_from_s3_library(sym)
-    end
-  end
-  alias_method :const_missing_not_from_s3_library, :const_missing
-  alias_method :const_missing, :const_missing_from_s3_library
 end
 
 
