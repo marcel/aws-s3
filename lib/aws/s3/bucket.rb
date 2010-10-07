@@ -271,8 +271,10 @@ module AWS
       
       # Delete all files in the bucket. Use with caution. Can not be undone.
       def delete_all
-        each do |object|
-          object.delete
+        while(size > 0) do
+          each do |object|
+            object.delete
+          end
         end
         self
       end
