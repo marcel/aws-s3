@@ -26,7 +26,7 @@ module AWS
       def request(verb, path, headers = {}, body = nil, attempts = 0, &block)
         body.rewind if body.respond_to?(:rewind) unless attempts.zero?      
         
-        path = virtual_host_fix(path, headers)
+        path, headers['Host'] = virtual_host_fix(path)
         
         requester = Proc.new do 
           path    = self.class.prepare_path(path) if attempts.zero? # Only escape the path once
@@ -64,31 +64,27 @@ module AWS
         authenticate = true if authenticate.nil? 
         path         = self.class.prepare_path(path)
 
-        headers = {}
-        path = virtual_host_fix(path, headers)
+        path, virtual_host = virtual_host_fix(path)
         
-        request      = request_method(:get).new(path, headers)
+        request      = request_method(:get).new(path, { 'Host' => virtual_host })
         query_string = query_string_authentication(request, options)
         returning "#{protocol(options)}#{http.address}#{port_string}#{path}" do |url|
           url << "?#{query_string}" if authenticate
         end
       end
       
-      def virtual_host_fix(path, headers)
+      def virtual_host_fix(path)
         # Quick and dirty fix to access buckets the VirtualHost-way
         # / => goes to "s3.amazonaws.com" /
         # /bucket => goes to "bucket.s3.amazonaws.com" /
         # /bucket/key => goest to "bucket.s3.amazonaws.com" /key
         case path
-          when /^\/(\?.*)?$/ then
-            headers['Host'] = DEFAULT_HOST
-            return '/' + ($1 || '')
-          when /^\/([^\?\/]+)(\?.*)?$/ then
-            headers['Host'] = $1 + '.' + DEFAULT_HOST
-            return '/' + ($2 || '')
-          when /^\/([^\?\/]+)([^\?]+)(\?.*)?$/ then
-            headers['Host'] = host = $1 + '.' + DEFAULT_HOST    
-            return $2 + ($3 || '')
+          when /^(\/(\?.*)?)$/ then
+            return $1, DEFAULT_HOST
+          when /^\/([^\?\/]+)((\?.*)?)$/ then
+            return '/' + $2, $1 + '.' + DEFAULT_HOST
+          when /^\/([^\?\/]+)(([^\?]+)(\?.*)?)$/ then
+            return $2, $1 + '.' + DEFAULT_HOST
         end        
       end
 
