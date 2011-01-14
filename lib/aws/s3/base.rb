@@ -66,23 +66,6 @@ module AWS #:nodoc:
         def request(verb, path, options = {}, body = nil, attempts = 0, &block)
           Service.response = nil
           process_options!(options, verb)
-
-          # Quick and dirty fix to access buckets the VirtualHost-way
-          # / => goes to "s3.amazonaws.com" /
-          # /bucket => goes to "bucket.s3.amazonaws.com" /
-          # /bucket/key => goest to "bucket.s3.amazonaws.com" /key
-          case path
-            when /^\/(\?.*)?$/ then
-              path = '/' + ($1 || '')
-              options['Host'] = DEFAULT_HOST
-            when /^\/([^\?\/]+)(\?.*)?$/ then
-              path = '/' + ($2 || '')
-              options['Host'] = $1 + '.' + DEFAULT_HOST
-            when /^\/([^\?\/]+)([^\?]+)(\?.*)?$/ then
-              path = $2 + ($3 || '')
-              options['Host'] = host = $1 + '.' + DEFAULT_HOST    
-          end
-
           response = response_class.new(connection.request(verb, path, options, body, attempts, &block))
           Service.response = response
 
