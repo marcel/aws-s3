@@ -624,7 +624,7 @@ module AWS
           end
 
           def valid_levels
-            %w(private public-read public-read-write authenticated-read)
+            %w(private public-read public-read-write authenticated-read bucket-owner-read bucket-owner-full-control)
           end
 
           def access_level
