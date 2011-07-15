@@ -562,7 +562,7 @@ module AWS
             path   = path!(bucket, name) << '?acl'
 
             respond_with ACL::Policy::Response do
-              policy ? put(path, {}, policy.to_xml) : ACL::Policy.new(get(path).policy)
+              policy ? put(path, {}, policy.to_xml) : ACL::Policy.new(get(bucket, path).policy)
             end
           end
         end

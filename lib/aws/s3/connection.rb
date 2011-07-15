@@ -23,15 +23,17 @@ module AWS
         connect
       end
           
-      def request(verb, path, headers = {}, body = nil, attempts = 0, &block)
+      def request(verb, bucket, path, headers = {}, body = nil, attempts = 0, request_options = {}, &block)
         body.rewind if body.respond_to?(:rewind) unless attempts.zero?      
         
         requester = Proc.new do 
           path    = self.class.prepare_path(path) if attempts.zero? # Only escape the path once
           request = request_method(verb).new(path, headers)
+          ensure_same_bucket!(bucket)
+          ensure_header_hostname!(request)
           ensure_content_type!(request)
           add_user_agent!(request)
-          authenticate!(request)
+          authenticate!(request, bucket)
           if body
             if body.respond_to?(:read)                                                                
               request.body_stream = body                                                           
@@ -56,14 +58,16 @@ module AWS
         attempts == 3 ? raise : (attempts += 1; retry)
       end
       
-      def url_for(path, options = {})
-        authenticate = options.delete(:authenticated)
+      def url_for(bucket, path, options = {})
+        authenticate      = options.delete(:authenticated)
         # Default to true unless explicitly false
-        authenticate = true if authenticate.nil? 
-        path         = self.class.prepare_path(path)
-        request      = request_method(:get).new(path, {})
-        query_string = query_string_authentication(request, options)
-        returning "#{protocol(options)}#{http.address}#{port_string}#{path}" do |url|
+        authenticate      = true if authenticate.nil? 
+        path              = self.class.prepare_path(path)
+        request           = request_method(:get).new(path, {})
+        options[:bucket]  = bucket
+        query_string      = query_string_authentication(request, options)
+        host              = (subdomain == bucket ? http.address : "#{bucket}.#{DEFAULT_HOST}")
+        returning "#{protocol(options)}#{host}#{port_string}#{path}" do |url|
           url << "?#{query_string}" if authenticate
         end
       end
@@ -121,13 +125,27 @@ module AWS
           http.port == default_port ? '' : ":#{http.port}"
         end
 
+        def ensure_header_hostname!(request)
+          request['Host'] = options[:server]
+        end
+
+        # Check if given bucket is the one defined uppon initialization.
+        # If not, close open connection and update bucket name
+        def ensure_same_bucket!(bucket)
+          if options[:bucket] != bucket
+            http.finish if persistent? and http and http.started?
+            options[:bucket] = bucket
+            options[:server] = bucket ? "#{options[:bucket]}.#{DEFAULT_HOST}" : DEFAULT_HOST
+          end
+        end
+
         def ensure_content_type!(request)
           request['Content-Type'] ||= 'binary/octet-stream'
         end
         
         # Just do Header authentication for now
-        def authenticate!(request)
-          request['Authorization'] = Authentication::Header.new(request, access_key_id, secret_access_key)
+        def authenticate!(request, bucket)
+          request['Authorization'] = Authentication::Header.new(request, access_key_id, secret_access_key, :bucket => bucket)
         end
         
         def add_user_agent!(request)
@@ -249,12 +267,12 @@ module AWS
       end
         
       class Options < Hash #:nodoc:
-        VALID_OPTIONS = [:access_key_id, :secret_access_key, :server, :port, :use_ssl, :persistent, :proxy].freeze
+        VALID_OPTIONS = [:access_key_id, :secret_access_key, :server, :port, :use_ssl, :persistent, :proxy, :bucket].freeze
         
         def initialize(options = {})
           super()
           validate(options)
-          replace(:server => DEFAULT_HOST, :port => (options[:use_ssl] ? 443 : 80))
+          replace(:server => (options[:bucket] ? "#{options[:bucket]}.#{DEFAULT_HOST}" : DEFAULT_HOST), :port => (options[:use_ssl] ? 443 : 80))
           merge!(options)
         end
 

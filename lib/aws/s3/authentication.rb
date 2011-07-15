@@ -61,7 +61,6 @@ module AWS
         private
     
           def canonical_string            
-            options = {}
             options[:expires] = expires if expires?
             CanonicalString.new(request, options)
           end
@@ -156,7 +155,7 @@ module AWS
           # "For non-authenticated or anonymous requests. A NotImplemented error result code will be returned if 
           # an authenticated (signed) request specifies a Host: header other than 's3.amazonaws.com'"
           # (from http://docs.amazonwebservices.com/AmazonS3/2006-03-01/VirtualHosting.html)
-          request['Host'] = DEFAULT_HOST
+          request['Host'] ||= DEFAULT_HOST
           build
         end
     
@@ -173,7 +172,7 @@ module AWS
               self << (key =~ self.class.amazon_header_prefix ? "#{key}:#{value}" : value)
               self << "\n"
             end
-            self << path
+            self << "/#{@options[:bucket]}#{path}"
           end
       
           def initialize_headers

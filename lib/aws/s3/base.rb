@@ -63,10 +63,10 @@ module AWS #:nodoc:
         #
         # It is unlikely that you would call this method directly. Subclasses of Base have convenience methods for each http request verb
         # that wrap calls to request.
-        def request(verb, path, options = {}, body = nil, attempts = 0, &block)
+        def request(verb, bucket, path, options = {}, body = nil, attempts = 0, &block)
           Service.response = nil
           process_options!(options, verb)
-          response = response_class.new(connection.request(verb, path, options, body, attempts, &block))
+          response = response_class.new(connection.request(verb, bucket, path, options, body, attempts, &block))
           Service.response = response
 
           Error::Response.new(response.response).error.raise if response.error?
@@ -85,8 +85,8 @@ module AWS #:nodoc:
 
         [:get, :post, :put, :delete, :head].each do |verb|
           class_eval(<<-EVAL, __FILE__, __LINE__)
-            def #{verb}(path, headers = {}, body = nil, &block)
-              request(:#{verb}, path, headers, body, &block)
+            def #{verb}(bucket, path, headers = {}, body = nil, &block)
+              request(:#{verb}, bucket, path, headers, body, &block)
             end
           EVAL
         end
