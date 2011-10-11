@@ -121,7 +121,12 @@ class ConnectionTest < Test::Unit::TestCase
     flexmock(connection.http).should_receive(:request).ordered
     connection.request :put, unescaped_path
   end
-  
+
+  def test_prepare_path_percent_escapes_spaces
+    assert_equal 'foo%20bar%20baz',
+                 Connection.prepare_path('foo bar baz')
+  end
+
   def test_if_request_has_no_body_then_the_content_length_is_set_to_zero
     # References bug: http://rubyforge.org/tracker/index.php?func=detail&aid=13052&group_id=2409&atid=9356
     connection = Connection.new(@keys)
