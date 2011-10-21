@@ -204,16 +204,47 @@ module AWS
             end
           end
 
+          # see http://docs.amazonwebservices.com/AmazonS3/latest/dev/index.html?RESTAuthentication.html#ConstructingTheCanonicalizedResourceElement
           def path
-            [only_path, extract_significant_parameter].compact.join('?')
+            [only_path, extract_significant_parameters].compact.join('?')
           end
           
-          def extract_significant_parameter
-            request.path[/[&?](acl|torrent|logging)(?:&|=|$)/, 1]
+          SIGNIFICANT_PARAMETERS = [
+            'acl', 'location', 'logging', 'notification', 'partNumber',
+            'policy', 'requestPayment', 'torrent', 'uploadId', 'uploads',
+            'versionId', 'versioning', 'versions', 'website',
+            'response-content-type', 'response-content-language',
+            'response-expires', 'response-cache-control',
+            'response-content-disposition', 'response-content-encoding'
+          ]
+
+          def extract_significant_parameters
+            # only the last value for each key will be included in the
+            # canonicalized resource
+            parameters = {}
+            if request.path['?']
+              request.path.split('?', 2).last.split('&').each do |p|
+                key, value = p.split('=', 2)
+                next unless SIGNIFICANT_PARAMETERS.include?(key)
+                parameters[key] = value && CGI.unescape(value)
+              end
+            end
+            return nil if parameters.empty?
+
+            parameters.keys.sort.map do |key|
+              if parameters[key]
+                # we specifically don't do CGI escaping on the values going
+                # into the signature string
+                [key, parameters[key]].join('=')
+              else
+                key
+              end
+            end.join('&')
           end
           
           def only_path
-            request.path[/^[^?]*/]
+            return request.path unless request.path['?']
+            request.path.split('?', 2).first
           end
       end
     end

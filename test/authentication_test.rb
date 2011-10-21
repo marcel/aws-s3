@@ -74,19 +74,56 @@ class CanonicalStringTest < Test::Unit::TestCase
     assert_equal '/foo/bar', Authentication::CanonicalString.new(request).send(:path)
   end
   
+  # quotes in comments in these next few tests refer to
+  # http://docs.amazonwebservices.com/AmazonS3/latest/dev/index.html?RESTAuthentication.html#ConstructingTheCanonicalizedResourceElement
   def test_path_includes_significant_query_strings
+    # "If the request addresses a sub-resource, like ?versioning, ?location,
+    # ?acl, or ?torrent, or ?versionid append the sub-resource, its value if it
+    # has one, and the question mark. Note that in case of multiple
+    # sub-resources, sub-resources must be lexicographically sorted by
+    # sub-resource name and separated by '&'. e.g. ?acl&versionId=value."
     significant_query_strings = [
-      ['/test/query/string?acl',             '/test/query/string?acl'],
-      ['/test/query/string?acl&foo=bar',     '/test/query/string?acl'],
-      ['/test/query/string?foo=bar&acl',     '/test/query/string?acl'],
-      ['/test/query/string?acl=foo',         '/test/query/string?acl'],
-      ['/test/query/string?torrent=foo',     '/test/query/string?torrent'],
-      ['/test/query/string?logging=foo',     '/test/query/string?logging'],
-      ['/test/query/string?bar=baz&acl=foo', '/test/query/string?acl']
+      ['/test/query/string?acl',                 '/test/query/string?acl'],
+      ['/test/query/string?acl&foo=bar',         '/test/query/string?acl'],
+      ['/test/query/string?foo=bar&acl',         '/test/query/string?acl'],
+      ['/test/query/string?acl=foo',             '/test/query/string?acl=foo'],
+      ['/test/query/string?torrent=foo',         '/test/query/string?torrent=foo'],
+      ['/test/query/string?logging=foo',         '/test/query/string?logging=foo'],
+      ['/test/query/string?bar=baz&acl=foo',     '/test/query/string?acl=foo'],
+      ['/test/query/string?acl=foo&torrent=bar', '/test/query/string?acl=foo&torrent=bar'],
+      ['/test/query/string?torrent=bar&acl=foo', '/test/query/string?acl=foo&torrent=bar']
     ]
     
     significant_query_strings.each do |uncleaned_path, expected_cleaned_path|
       assert_equal expected_cleaned_path, Authentication::CanonicalString.new(Net::HTTP::Get.new(uncleaned_path)).send(:path)
+    end
+  end
+  
+  def test_path_includes_significant_query_strings_with_unencoded_values
+    # "When signing you do not encode these values. However, when making the
+    # request, you must encode these parameter values."
+    assert_equal '/test/query/string?acl=foo bar', Authentication::CanonicalString.new(Net::HTTP::Get.new('/test/query/string?acl=foo+bar')).send(:path)
+  end
+  
+  def test_path_recognizes_all_significant_query_strings
+    # "The list of sub-resources that must be included when constructing the
+    # CanonicalizedResource Element are: acl, location, logging, notification,
+    # partNumber, policy, requestPayment, torrent, uploadId, uploads,
+    # versionId, versioning, versions and website...  If the request specifies
+    # query string parameters overriding the response header values... append
+    # the query string parameters, and its values... The query string
+    # parameters in a GET request include response-content-type,
+    # response-content-language, response-expires, response-cache-control,
+    # response-content-disposition, and response-content-encoding."
+    base_path = '/test/query/string'
+    [ 'acl', 'location', 'logging', 'notification', 'partNumber', 'policy',
+      'requestPayment', 'torrent', 'uploadId', 'uploads', 'versionId',
+      'versioning', 'versions', 'website', 'response-content-type',
+      'response-content-language', 'response-expires',
+      'response-cache-control', 'response-content-disposition',
+      'response-content-encoding' ].each do |significant_parameter|
+      path = "#{base_path}?#{significant_parameter}"
+      assert_equal path, Authentication::CanonicalString.new(Net::HTTP::Get.new(path)).send(:path)
     end
   end
   
