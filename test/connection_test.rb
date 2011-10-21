@@ -95,12 +95,53 @@ class ConnectionTest < Test::Unit::TestCase
     assert_match %r(^https://example\.org:555/foo\?), connection.url_for('/foo')
   end
 
+  def assert_url_has_query_parameter(url, key, value=:unspecified)
+    if value == :unspecified
+      assert_match /\?([^&]+&)*#{Regexp.escape(key)}(=|&|$)/, url
+    elsif value.nil?
+      assert_match /\?([^&]+&)*#{Regexp.escape(key)}=?(&|$)/, url
+    else
+      assert_match /\?([^&]+&)*#{Regexp.escape(key)}=#{Regexp.escape(CGI.escape(value.to_s))}/, url
+    end
+  end
+
+  def assert_url_lacks_query_parameter(url, key)
+    assert_no_match /\?([^&]+&)*#{Regexp.escape(key)}(=|&|$)/, url
+  end
+
+  def assert_url_authenticated(url)
+    assert_url_has_query_parameter(url, 'AWSAccessKeyId')
+  end
+
+  def assert_url_unauthenticated(url)
+    assert_url_lacks_query_parameter(url, 'AWSAccessKeyId')
+  end
+
   def test_url_for_with_and_without_authenticated_urls
     connection = Connection.new(:access_key_id => '123', :secret_access_key => 'abc', :server => 'example.org')
     authenticated = lambda {|url| url['?AWSAccessKeyId']}
-    assert authenticated[connection.url_for('/foo')]
-    assert authenticated[connection.url_for('/foo', :authenticated => true)]
-    assert !authenticated[connection.url_for('/foo', :authenticated => false)]
+    assert_url_authenticated connection.url_for('/foo')
+    assert_url_authenticated connection.url_for('/foo', :authenticated => true)
+    assert_url_unauthenticated connection.url_for('/foo', :authenticated => false)
+  end
+  
+  def test_url_for_with_request_parameter
+    connection = Connection.new(:access_key_id => '123', :secret_access_key => 'abc', :server => 'example.org')
+    url = connection.url_for('/foo', 'response-content-disposition' => 'attachment; foo.txt')
+    assert_url_has_query_parameter url, 'response-content-disposition', 'attachment; foo.txt'
+  end
+  
+  def test_url_for_with_unknown_request_parameter
+    connection = Connection.new(:access_key_id => '123', :secret_access_key => 'abc', :server => 'example.org')
+    url = connection.url_for('/foo', 'random-parameter' => 'attachment; foo.txt')
+    assert_url_lacks_query_parameter url, 'random-parameter'
+  end
+  
+  def test_url_for_with_authenticated_and_request_parameter
+    connection = Connection.new(:access_key_id => '123', :secret_access_key => 'abc', :server => 'example.org')
+    url = connection.url_for('/foo', :authenticated => true, 'response-content-disposition' => 'attachment; foo.txt')
+    assert_url_has_query_parameter url, 'response-content-disposition', 'attachment; foo.txt'
+    assert_url_authenticated url
   end
   
   def test_connecting_through_a_proxy
