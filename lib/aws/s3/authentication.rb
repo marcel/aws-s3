@@ -61,7 +61,7 @@ module AWS
         private
     
           def canonical_string            
-            options = {}
+            options = @options.slice(*CanonicalString::SIGNIFICANT_PARAMETERS)
             options[:expires] = expires if expires?
             CanonicalString.new(request, options)
           end
