@@ -99,6 +99,11 @@ class CanonicalStringTest < Test::Unit::TestCase
     end
   end
   
+  def test_path_includes_significant_query_strings_from_options
+    assert_equal '/test/query/string?acl=foo', Authentication::CanonicalString.new(Net::HTTP::Get.new('/test/query/string'), :acl => 'foo').send(:path)
+    assert_equal '/test/query/string?acl&torrent=foo', Authentication::CanonicalString.new(Net::HTTP::Get.new('/test/query/string?acl'), :torrent => 'foo').send(:path)
+  end
+  
   def test_path_includes_significant_query_strings_with_unencoded_values
     # "When signing you do not encode these values. However, when making the
     # request, you must encode these parameter values."

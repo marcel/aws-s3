@@ -219,9 +219,13 @@ module AWS
           ]
 
           def extract_significant_parameters
-            # only the last value for each key will be included in the
-            # canonicalized resource
+            # only the last value for each key, with preference to those still
+            # in the options hash, will be included in the canonicalized
+            # resource
             parameters = {}
+
+            # significant parameters may already be in the query string of the
+            # request's path (with values CGI escaped)...
             if request.path['?']
               request.path.split('?', 2).last.split('&').each do |p|
                 key, value = p.split('=', 2)
@@ -229,6 +233,16 @@ module AWS
                 parameters[key] = value && CGI.unescape(value)
               end
             end
+
+            # ...or they may be in the options that will eventually make their
+            # way into the query string (with values not yet CGI escaped)
+            @options.each do |key,value|
+              # treat symbols and string equally (as the string)
+              key = key.to_s
+              next unless SIGNIFICANT_PARAMETERS.include?(key)
+              parameters[key] = value
+            end
+
             return nil if parameters.empty?
 
             parameters.keys.sort.map do |key|
