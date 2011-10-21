@@ -58,16 +58,15 @@ end
 
 namespace :dist do  
   spec = Gem::Specification.new do |s|
-    s.name              = 'aws-s3'
+    s.name              = 'aws-s3-instructure'
     s.version           = Gem::Version.new(AWS::S3::Version)
     s.summary           = "Client library for Amazon's Simple Storage Service's REST API"
-    s.description       = s.summary
-    s.email             = 'marcel@vernix.org'
-    s.author            = 'Marcel Molina Jr.'
+    s.description       = "Client library for Amazon's Simple Storage Service's REST API, forked by Instructure pending action on pull request https://github.com/marcel/aws-s3/pull/40"
+    s.email             = 'jacob@instructure.com'
+    s.author            = 'Jacob Fugal'
     s.has_rdoc          = true
     s.extra_rdoc_files  = %w(README COPYING INSTALL)
     s.homepage          = 'http://amazon.rubyforge.org'
-    s.rubyforge_project = 'amazon'
     s.files             = FileList['Rakefile', 'lib/**/*.rb', 'bin/*', 'support/**/*.rb']
     s.executables       << 's3sh'
     s.test_files        = Dir['test/**/*']
@@ -131,39 +130,6 @@ namespace :dist do
   end
   
   package_name = lambda {|specification| File.join('pkg', "#{specification.name}-#{specification.version}")}
-  
-  desc 'Push a release to rubyforge'
-  task :release => [:confirm_release, :clean, :add_release_marker_to_changelog, :package, :commit_changelog, :tag] do 
-    require 'rubyforge'
-    package = package_name[spec]
-
-    rubyforge = RubyForge.new.configure
-    rubyforge.login
-    
-    user_config = rubyforge.userconfig
-    user_config['release_changes'] = YAML.load_file('CHANGELOG')[spec.version.to_s].join("\n")
-  
-    version_already_released = lambda do
-      releases = rubyforge.autoconfig['release_ids']
-      releases.has_key?(spec.name) && releases[spec.name][spec.version.to_s]
-    end
-    
-    abort("Release #{spec.version} already exists!") if version_already_released.call
-    
-    begin
-      rubyforge.add_release(spec.rubyforge_project, spec.name, spec.version.to_s, "#{package}.tar.gz", "#{package}.gem")
-      puts "Version #{spec.version} released!"
-    rescue Exception => exception
-      puts 'Release failed!'
-      raise
-    end
-  end
-  
-  desc 'Upload a beta gem'
-  task :push_beta_gem => [:clobber_package, :package] do
-    beta_gem = package_name[spec]
-    sh %(scp #{beta_gem}.gem  marcel@rubyforge.org:/var/www/gforge-projects/amazon/beta)
-  end
   
   task :spec do
     puts spec.to_ruby
