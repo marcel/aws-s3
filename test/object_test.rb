@@ -148,6 +148,21 @@ class ObjectTest < Test::Unit::TestCase
       S3Object.about('asdfasdfasdfas-this-does-not-exist', 'bucket does not matter')
     end
   end
+  def test_copy_options_are_used
+    options = {'x-amz-storage-class' => 'REDUCED_REDUNDANCY'}
+    resp = FakeResponse.new
+
+    connection = flexmock('Mock connection') do |mock|
+      mock.should_receive(:request).
+        # The storage-class key must be passed to connection.request(:put, ...)
+        with(:put, '/some-bucket/new', hsh(options), any, any).
+        and_return(resp)
+    end
+    flexmock(S3Object).should_receive(:connection).and_return(connection)
+
+    result = S3Object.copy('old', 'new', 'some-bucket', options)
+    assert_equal resp.code, result.code
+  end
 end
 
 class MetadataTest < Test::Unit::TestCase
