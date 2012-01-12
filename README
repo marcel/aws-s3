@@ -72,7 +72,7 @@ Assuming the name you chose isn't already taken, your new bucket will now appear
   Service.buckets
   # => [#<AWS::S3::Bucket @attributes={"name"=>"jukebox"}>]
 
-Once you have succesfully created a bucket you can you can fetch it by name using Bucket.find.
+Once you have succesfully created a bucket you can fetch it by name using Bucket.find.
 
   music_bucket = Bucket.find('jukebox')
 
