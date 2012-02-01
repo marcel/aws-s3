@@ -115,7 +115,7 @@ module AWS
           #   3) The current time in seconds since the epoch plus the default number of seconds (60 seconds)
           def expires
             return options[:expires] if options[:expires]
-            @expires || = date.to_i + expires_in
+            @expires ||= date.to_i + expires_in
           end
           
           def expires_in
