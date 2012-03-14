@@ -21,12 +21,14 @@ require 's3/bittorrent'
 require 's3/service'
 require 's3/owner'
 require 's3/bucket'
+require 's3/website'
 require 's3/object'
 require 's3/error'
 require 's3/exceptions'
 require 's3/connection'
 require 's3/authentication'
 require 's3/response'
+require 's3/content'
 
 AWS::S3::Base.class_eval do
   include AWS::S3::Connection::Management

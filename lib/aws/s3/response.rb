@@ -69,6 +69,14 @@ module AWS
         end
       end
     end
+    
+    class Website  
+      class Response < Base::Response
+        def website
+          parsed
+        end
+      end
+    end
   
     class S3Object
       class Response < Base::Response
