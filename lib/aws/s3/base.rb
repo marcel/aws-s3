@@ -64,10 +64,6 @@ module AWS #:nodoc:
         # It is unlikely that you would call this method directly. Subclasses of Base have convenience methods for each http request verb
         # that wrap calls to request.
         def request(verb, path, options = {}, body = nil, attempts = 0, &block)
-					if options[:body] and body.nil?
-						body=options[:body]
-			#	    options.delete(:body)
-					end
           Service.response = nil
           process_options!(options, verb)
           response = response_class.new(connection.request(verb, path, options, body, attempts, &block))
