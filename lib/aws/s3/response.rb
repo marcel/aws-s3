@@ -65,7 +65,13 @@ module AWS
     class Bucket  
       class Response < Base::Response
         def bucket
-          parsed
+          if ! parsed['list_bucket_response'].nil?
+            return parsed['list_bucket_response']
+          elsif ! parsed['list_bucket_result'].nil?
+            return parsed['list_bucket_result']
+          else
+            return parsed
+          end
         end
       end
     end
@@ -81,11 +87,21 @@ module AWS
     class Service
       class Response < Base::Response
         def empty?
-          parsed['buckets'].nil?
+          if parsed['buckets'].nil?
+            # Walrus model
+            return parsed['list_all_my_buckets_response']['buckets'].nil?
+          end
+          return false
         end
   
         def buckets
-          parsed['buckets']['bucket'] || []
+          if ! parsed['buckets'].nil?
+            parsed['buckets']['bucket']
+          elsif !  parsed['list_all_my_buckets_response']['buckets'].nil?
+            parsed['list_all_my_buckets_response']['buckets']['bucket']
+          else
+            []
+          end
         end
       end
     end
