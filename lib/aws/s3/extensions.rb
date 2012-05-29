@@ -39,6 +39,11 @@ class String
     end
   end
   
+  def tap
+    yield(self)
+    self
+  end unless ''.respond_to?(:tap)
+  
   def previous
     dup.previous!
   end
