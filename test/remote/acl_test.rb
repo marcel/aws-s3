@@ -65,7 +65,7 @@ class RemoteACLTest < Test::Unit::TestCase
     new_grant                       = ACL::Grant.new
     new_grant.permission            = 'READ'
     new_grant_grantee               = ACL::Grantee.new
-    new_grant_grantee.email_address = 'marcel@vernix.org'
+    new_grant_grantee.email_address = [['amazon', 'marcelmolina'].join('@'), 'com'].join('.')
     new_grant.grantee = new_grant_grantee
     acl.grants << new_grant
     
