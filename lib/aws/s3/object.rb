@@ -75,10 +75,10 @@ module AWS
     #   song.content_type = 'application/pdf'
     #   song.store
     # 
-    # (Keep in mind that due to limitiations in S3's exposed API, the only way to change things like the content_type
+    # (Keep in mind that due to limitations in S3's exposed API, the only way to change things like the content_type
     # is to PUT the object onto S3 again. In the case of large files, this will result in fully re-uploading the file.)
     # 
-    # A bevie of information about an object can be had using the <tt>about</tt> method:
+    # A bevy of information about an object can be had using the <tt>about</tt> method:
     # 
     #   pp song.about
     #   {"last-modified"    => "Sat, 28 Oct 2006 21:29:26 GMT",
