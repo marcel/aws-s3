@@ -1,4 +1,5 @@
 = AWS::S3
+Forked from https://github.com/marcel/aws-s3
 
 AWS::S3 is a Ruby library for Amazon's Simple Storage Service's REST API (http://aws.amazon.com/s3).
 Full documentation of the currently supported API can be found at http://docs.amazonwebservices.com/AmazonS3/2006-03-01.
@@ -63,6 +64,9 @@ Buckets are containers for objects (the files you store on S3). To create a new 
   # Pick a unique name, or else you'll get an error 
   # if the name is already taken.
   Bucket.create('jukebox')
+  
+  To add location
+  Bucket.create('jukebox', {}, "EU")
 
 Bucket names must be unique across the entire S3 system, sort of like domain names across the internet. If you try
 to create a bucket with a name that is already taken, you will get an error.
@@ -498,6 +502,27 @@ Disabling logging is just as simple as enabling it:
 
  Bucket.disable_logging_for('jukebox')
 
+== Website
+==== Enable bucket as website
+To enable a bucket as a website you just specify its name.
+
+  Pick a existing bucket name, or else you'll get an error 
+  Website.create('jukebox')
+  By default index document is "index.html" and error document is "error.html" 
+
+  If Its different you can do
+  Website.create('jukebox', "about.html", "404.html")
+
+
+Once you have succesfully enabled as website you can you can fetch it by name using Website.find.
+
+  music_website = Website.find('jukebox')
+
+The bucket that is not website enabled will will throw an error.
+
+You can remove website from bucket using Website.delete.
+
+  Website.delete('jukebox')
 
 == Errors
 ==== When things go wrong

@@ -5,6 +5,8 @@ module AWS
     #   # Pick a unique name, or else you'll get an error 
     #   # if the name is already taken.
     #   Bucket.create('jukebox')
+    #   To add location
+    #   Bucket.create('jukebox', {}, "EU")
     # 
     # Bucket names must be unique across the entire S3 system, sort of like domain names across the internet. If you try
     # to create a bucket with a name that is already taken, you will get an error.
@@ -59,6 +61,23 @@ module AWS
     #   Bucket.delete('photos', :force => true)
     #   # => true
     class Bucket < Base
+
+      class Builder < XmlGenerator #:nodoc:
+        attr_reader :location
+        def initialize(location)
+          @location  = location
+          super()
+        end
+
+        def build
+          return nil unless @location
+          xml.tag!('CreateBucketConfiguration', 'xmlns' => 'http://s3.amazonaws.com/doc/2006-03-01/') do
+            xml.LocationConstraint @location
+          end
+        end
+      end
+      
+      
       class << self
         # Creates a bucket named <tt>name</tt>. 
         #
@@ -71,12 +90,15 @@ module AWS
         # By default new buckets have their access level set to private. You can override this using the <tt>:access</tt> option.
         #
         #   Bucket.create('internet_drop_box', :access => :public_read_write)
+        
+        # If you want to change default location
+        #   Bucket.create('internet_drop_box', {}, "EU")
         #
         # The full list of access levels that you can set on Bucket and S3Object creation are listed in the README[link:files/README.html] 
         # in the section called 'Setting access levels'.
-        def create(name, options = {})
+        def create(name, options = {}, location=nil)
           validate_name!(name)
-          put("/#{name}", options).success?
+          put("/#{name}", options, Builder.new(location).to_s).success?
         end
         
         # Fetches the bucket named <tt>name</tt>. 

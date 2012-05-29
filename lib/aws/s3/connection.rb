@@ -24,8 +24,7 @@ module AWS
       end
           
       def request(verb, path, headers = {}, body = nil, attempts = 0, &block)
-        body.rewind if body.respond_to?(:rewind) unless attempts.zero?      
-        
+        body.rewind if body.respond_to?(:rewind) unless attempts.zero?              
         requester = Proc.new do 
           path    = self.class.prepare_path(path) if attempts.zero? # Only escape the path once
           request = request_method(verb).new(path, headers)
