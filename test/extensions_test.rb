@@ -74,6 +74,16 @@ class StringExtensionsTest < Test::Unit::TestCase
     assert "318597/620065/GTL_75\24300_A600_A610.zip".remove_extended.valid_utf8?
     assert "318597/620065/GTL_75£00_A600_A610.zip".remove_extended.valid_utf8?
   end
+  
+  def test_tap
+    assert "http://google.com".tap do |url|
+      url << "/analtyics/"
+    end
+    assert "http://google.com".tap do |url|
+      url << "/download.zip"
+    end
+  end
+  
 end
 
 class CoercibleStringTest < Test::Unit::TestCase  
