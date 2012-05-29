@@ -76,12 +76,7 @@ class StringExtensionsTest < Test::Unit::TestCase
   end
   
   def test_tap
-    assert "http://google.com".tap do |url|
-      url << "/analtyics/"
-    end
-    assert "http://google.com".tap do |url|
-      url << "/download.zip"
-    end
+    assert_equal("http://google.com/foo/", "http://google.com".tap {|url| url << "/foo/" })
   end
   
 end
