@@ -62,10 +62,11 @@ module AWS
         authenticate = true if authenticate.nil? 
         path         = self.class.prepare_path(path)
         request      = request_method(:get).new(path, {})
-        query_string = query_string_authentication(request, options)
-        returning "#{protocol(options)}#{http.address}#{port_string}#{path}" do |url|
-          url << "?#{query_string}" if authenticate
-        end
+        query_segments = permissible_request_parameters(options)
+        query_segments << query_string_authentication(request, options) if authenticate
+        url = "#{protocol(options)}#{http.address}#{port_string}#{path}"
+        url << (url['?'] ? '&' : '?') << query_segments.join('&') unless query_segments.empty?
+        url
       end
       
       def subdomain
@@ -134,6 +135,22 @@ module AWS
           request['User-Agent'] ||= "AWS::S3/#{Version}"
         end
         
+        def permissible_request_parameters(options = {})
+          # fill out parameters given options according to
+          # http://docs.amazonwebservices.com/AmazonS3/latest/API/index.html?RESTObjectGET.html
+          # section Requests subsection Request Parameters and
+          # http://docs.amazonwebservices.com/AmazonS3/latest/dev/index.html?RESTAuthentication.html#ConstructingTheCanonicalizedResourceElement
+          [ 'acl', 'location', 'logging', 'notification', 'partNumber',
+            'policy', 'requestPayment', 'torrent', 'uploadId', 'uploads',
+            'versionId', 'versioning', 'versions', 'website',
+            'response-content-type', 'response-content-language',
+            'response-expires', 'response-cache-control',
+            'response-content-disposition', 'response-content-encoding' ].map do |key|
+            key = key.to_sym unless options.has_key?(key)
+            options.has_key?(key) ? [key, CGI.escape(options[key])].join('=') : nil
+          end.compact
+        end
+
         def query_string_authentication(request, options = {})
           Authentication::QueryString.new(request, access_key_id, secret_access_key, options)
         end
