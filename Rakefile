@@ -290,45 +290,48 @@ namespace :todo do
   end
 end if File.exists?(File.join(library_root, 'TODO'))
 
-namespace :site do
-  require 'erb'
-  require 'rdoc/markup/simple_markup'
-  require 'rdoc/markup/simple_markup/to_html'
-  
-  readme    = lambda { IO.read('README')[/^== Getting started\n(.*)/m, 1] }
+begin
+  namespace :site do
+    require 'erb'
+    require 'rdoc/markup/simple_markup'
+    require 'rdoc/markup/simple_markup/to_html'
 
-  readme_to_html = lambda do
-    handler = SM::ToHtml.new
-    handler.instance_eval do
-      require 'syntax'
-      require 'syntax/convertors/html'
-      def accept_verbatim(am, fragment) 
-        syntax = Syntax::Convertors::HTML.for_syntax('ruby')
-        @res << %(<div class="ruby">#{syntax.convert(fragment.txt, true)}</div>)
+    readme    = lambda { IO.read('README')[/^== Getting started\n(.*)/m, 1] }
+
+    readme_to_html = lambda do
+      handler = SM::ToHtml.new
+      handler.instance_eval do
+        require 'syntax'
+        require 'syntax/convertors/html'
+        def accept_verbatim(am, fragment)
+          syntax = Syntax::Convertors::HTML.for_syntax('ruby')
+          @res << %(<div class="ruby">#{syntax.convert(fragment.txt, true)}</div>)
+        end
+      end
+      SM::SimpleMarkup.new.convert(readme.call, handler)
+    end
+
+    desc 'Regenerate the public website page'
+    task :build => 'doc:readme' do
+      open('site/public/index.html', 'w') do |file|
+        erb_data = {}
+        erb_data[:readme] = readme_to_html.call
+        file.write ERB.new(IO.read('site/index.erb')).result(binding)
       end
     end
-    SM::SimpleMarkup.new.convert(readme.call, handler)
-  end
-  
-  desc 'Regenerate the public website page'
-  task :build => 'doc:readme' do
-    open('site/public/index.html', 'w') do |file|
-      erb_data = {}
-      erb_data[:readme] = readme_to_html.call
-      file.write ERB.new(IO.read('site/index.erb')).result(binding)
+
+    task :refresh => :build do
+      system 'open site/public/index.html'
+    end
+
+    desc 'Update the live website'
+    task :deploy => :build do
+      site_files = FileList['site/public/*']
+      site_files.delete_if {|file| File.directory?(file)}
+      sh %(scp #{site_files.join ' '} marcel@rubyforge.org:/var/www/gforge-projects/amazon/)
     end
   end
-  
-  task :refresh => :build do
-    system 'open site/public/index.html'
-  end
-  
-  desc 'Update the live website'
-  task :deploy => :build do
-    site_files = FileList['site/public/*']
-    site_files.delete_if {|file| File.directory?(file)}
-    sh %(scp #{site_files.join ' '} marcel@rubyforge.org:/var/www/gforge-projects/amazon/)
-  end
-end 
+rescue LoadError
+end
 
 task :clean => ['dist:clobber_package', 'doc:clobber_rdoc', 'test:clobber_coverage']
