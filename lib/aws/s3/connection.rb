@@ -8,7 +8,8 @@ module AWS
         
         def prepare_path(path)
           path = path.remove_extended unless path.valid_utf8?
-          URI.escape(path)
+          chars_to_escape = /[!*'();:@&=+$,\?#\[\]\s]/ # rfc3986, without /, plus space
+          URI.escape( path, chars_to_escape )
         end
       end
       

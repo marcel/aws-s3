@@ -121,7 +121,28 @@ class ConnectionTest < Test::Unit::TestCase
     flexmock(connection.http).should_receive(:request).ordered
     connection.request :put, unescaped_path
   end
-  
+
+  def test_prepare_path_percent_escapes_spaces
+    assert_equal 'foo%20bar%20baz',
+                 Connection.prepare_path('foo bar baz')
+  end
+
+  def test_url_for_escapes_file_paths_with_reserved_characters
+    reserved_chars = '!*\'();:@&=+$,?#[ ]' # rfc3986, without /, plus space
+    connection =
+      Connection.new(:access_key_id => '123', :secret_access_key => 'abc', :port => 80)
+    assert_match(
+      /http:\/\/s3.amazonaws.com\/Foo\/%21%2A%27%28%29%3B%3A%40%26%3D%2B%24%2C%3F%23%5B%20%5D\/foo\/bar\?AWSAccessKeyId=[^&]*&Expires=[^&]*&Signature=.*$/,
+      AWS::S3::S3Object.url_for("#{reserved_chars}/foo/bar", 'Foo')
+    )
+  end  
+
+  def test_prepare_path_escapes_all_uri_reserved_charachters_except_slash
+    reserved_chars = '!*\'();:@&=+$,?#[ ]' # rfc3986, without /, plus space
+    assert_equal '%21%2A%27%28%29%3B%3A%40%26%3D%2B%24%2C%3F%23%5B%20%5D/foo/bar',
+                 Connection.prepare_path("#{reserved_chars}/foo/bar")
+  end
+
   def test_if_request_has_no_body_then_the_content_length_is_set_to_zero
     # References bug: http://rubyforge.org/tracker/index.php?func=detail&aid=13052&group_id=2409&atid=9356
     connection = Connection.new(@keys)
