@@ -156,7 +156,8 @@ module AWS
           # "For non-authenticated or anonymous requests. A NotImplemented error result code will be returned if 
           # an authenticated (signed) request specifies a Host: header other than 's3.amazonaws.com'"
           # (from http://docs.amazonwebservices.com/AmazonS3/2006-03-01/VirtualHosting.html)
-          request['Host'] = DEFAULT_HOST
+          # ... and now CanonicalString will be fix if request['Host'] is set
+          # request['Host'] = DEFAULT_HOST
           build
         end
     
@@ -213,7 +214,13 @@ module AWS
           end
           
           def only_path
-            request.path[/^[^?]*/]
+            # Check if a VirtualHost "bucket.s3.amazonaws.com" is set
+            # If the the path in the canonical string has to be "/bucket/request_path"
+            if ( request['Host'] =~ /^(.+)\.s3\.amazonaws\.com$/ )
+              '/' + $1 + request.path[/^[^?]*/]
+            else
+              request.path[/^[^?]*/]
+            end
           end
       end
     end
