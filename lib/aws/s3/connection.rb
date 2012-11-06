@@ -63,7 +63,7 @@ module AWS
         path         = self.class.prepare_path(path)
         request      = request_method(:get).new(path, {})
         query_string = query_string_authentication(request, options)
-        "#{protocol(options)}#{http.address}#{port_string}#{path}".tap do |url|
+        "#{protocol(options)}#{http.address}#{port_string}#{path[/^[^?]*/]}".tap do |url|
           url << "?#{query_string}" if authenticate
         end
       end

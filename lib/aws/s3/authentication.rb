@@ -58,15 +58,15 @@ module AWS
           @options = options
         end
   
-        private
-    
-          def canonical_string            
+          def canonical_string
             options = {}
             options[:expires] = expires if expires?
             CanonicalString.new(request, options)
           end
           memoized :canonical_string
-    
+
+        private
+
           def encoded_canonical
             digest   = OpenSSL::Digest::Digest.new('sha1')
             b64_hmac = [OpenSSL::HMAC.digest(digest, secret_access_key, canonical_string)].pack("m").strip
@@ -122,9 +122,10 @@ module AWS
             options.has_key?(:expires_in) ? Integer(options[:expires_in]) : DEFAULT_EXPIRY
           end
           
-          # Keep in alphabetical order
           def build
-            "AWSAccessKeyId=#{access_key_id}&Expires=#{expires}&Signature=#{encoded_canonical}"
+            params = canonical_string.extract_significant_parameter(false)
+            params = '' != params ? "#{params}&" : ''
+            "#{params}AWSAccessKeyId=#{access_key_id}&Expires=#{expires}&Signature=#{encoded_canonical}"
           end
       end
       
@@ -144,8 +145,33 @@ module AWS
           def amazon_header_prefix
             /^#{AMAZON_HEADER_PREFIX}/io
           end
+
+          def query_parameters
+            %w(acl location logging notification partNumber policy
+               requestPayment torrent uploadId uploads versionId
+               versioning versions delete lifecycle tagging cors
+               response-content-type response-content-language
+               response-expires response-cache-control
+               response-content-disposition response-content-encoding)
         end
         
+          def query_parameters_for_signature(params)
+            params.select {|k, v| query_parameters.include?(k)}
+          end
+
+          def cgi_escape(value)
+            result = CGI::escape(value.to_s)
+            result = result.gsub('+', '%20').gsub('%7E', '~')
+            result
+          end
+
+          def cgi_unescape(value)
+            result = value.to_s.gsub('%20', '+').gsub('~', '%7E')
+            result = CGI::unescape(result)
+            result
+          end
+        end
+
         attr_reader :request, :headers
         
         def initialize(request, options = {})
@@ -160,6 +186,20 @@ module AWS
           build
         end
     
+        def extract_significant_parameter(unescape = true)
+          # unescape is true when build-ing a CanonicalString and should be false otherwise
+          parts = []
+          params = Rack::Utils.parse_nested_query(request.path.sub(/^[^?]*\?/, ''))
+          params = self.class.query_parameters_for_signature(params)
+          unless params.empty?
+            parts << params.sort_by{|p| p[0]}.collect{|p|
+              param = p[1] ? "#{p[0]}=#{p[1]}" : p[0]
+              unescape ? self.class.cgi_unescape(param) : param
+            }.join('&')
+          end
+          parts.count > 0 ? parts.join : nil
+        end
+
         private
           def build
             self << "#{request.method}\n"
@@ -206,10 +246,6 @@ module AWS
 
           def path
             [only_path, extract_significant_parameter].compact.join('?')
-          end
-          
-          def extract_significant_parameter
-            request.path[/[&?](acl|torrent|logging)(?:&|=|$)/, 1]
           end
           
           def only_path
