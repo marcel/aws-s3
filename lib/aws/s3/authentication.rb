@@ -59,14 +59,14 @@ module AWS
         end
   
         private
-    
-          def canonical_string            
+
+          def canonical_string
             options = {}
             options[:expires] = expires if expires?
             CanonicalString.new(request, options)
           end
           memoized :canonical_string
-    
+
           def encoded_canonical
             digest   = OpenSSL::Digest::Digest.new('sha1')
             b64_hmac = [OpenSSL::HMAC.digest(digest, secret_access_key, canonical_string)].pack("m").strip
@@ -122,7 +122,6 @@ module AWS
             options.has_key?(:expires_in) ? Integer(options[:expires_in]) : DEFAULT_EXPIRY
           end
           
-          # Keep in alphabetical order
           def build
             "AWSAccessKeyId=#{access_key_id}&Expires=#{expires}&Signature=#{encoded_canonical}"
           end
@@ -144,8 +143,21 @@ module AWS
           def amazon_header_prefix
             /^#{AMAZON_HEADER_PREFIX}/io
           end
-        end
+
+          def query_parameters
+            %w(acl location logging notification partNumber policy
+               requestPayment torrent uploadId uploads versionId
+               versioning versions delete lifecycle tagging cors
+               response-content-type response-content-language
+               response-expires response-cache-control
+               response-content-disposition response-content-encoding)
+          end
         
+          def query_parameters_for_signature(params)
+            params.select {|k, v| query_parameters.include?(k)}
+          end
+        end
+
         attr_reader :request, :headers
         
         def initialize(request, options = {})
@@ -159,7 +171,7 @@ module AWS
           request['Host'] = DEFAULT_HOST
           build
         end
-    
+
         private
           def build
             self << "#{request.method}\n"
@@ -207,9 +219,18 @@ module AWS
           def path
             [only_path, extract_significant_parameter].compact.join('?')
           end
-          
+
           def extract_significant_parameter
-            request.path[/[&?](acl|torrent|logging)(?:&|=|$)/, 1]
+            query = URI.parse(request.path).query
+            return nil if query.nil?
+            params = CGI.parse(query) #this automatically unescapes query params
+            params = self.class.query_parameters_for_signature(params)
+            return nil if params.empty?
+            parts = []
+            parts << params.sort_by{|p| p[0]}.collect{|p|
+              p[1] ? "#{p[0]}=#{p[1]}" : p[0]
+            }.join('&')
+            parts.join
           end
           
           def only_path
