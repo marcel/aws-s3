@@ -229,17 +229,16 @@ module AWS
           end
 
           def extract_significant_parameter
-            # unescape is true when build-ing a CanonicalString and should be false otherwise
-            parts = []
-            params = Rack::Utils.parse_nested_query(request.path.sub(/^[^?]*\?/, ''))
+            query = URI.parse(request.path).query
+            return nil if query.nil?
+            params = CGI.parse(query) #this automatically unescapes query params
             params = self.class.query_parameters_for_signature(params)
-            unless params.empty?
-              parts << params.sort_by{|p| p[0]}.collect{|p|
-                param = p[1] ? "#{p[0]}=#{p[1]}" : p[0]
-                unescape ? self.class.cgi_unescape(param) : param
-              }.join('&')
-            end
-            parts.count > 0 ? parts.join : nil
+            return nil if params.empty?
+            parts = []
+            parts << params.sort_by{|p| p[0]}.collect{|p|
+              p[1] ? "#{p[0]}=#{p[1]}" : p[0]
+            }.join('&')
+            parts.join
           end
           
           def only_path
