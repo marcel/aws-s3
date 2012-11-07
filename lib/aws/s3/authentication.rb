@@ -58,14 +58,14 @@ module AWS
           @options = options
         end
   
+        private
+
           def canonical_string
             options = {}
             options[:expires] = expires if expires?
             CanonicalString.new(request, options)
           end
           memoized :canonical_string
-
-        private
 
           def encoded_canonical
             digest   = OpenSSL::Digest::Digest.new('sha1')
@@ -123,9 +123,7 @@ module AWS
           end
           
           def build
-            params = canonical_string.extract_significant_parameter(false)
-            params = '' != params ? "#{params}&" : ''
-            "#{params}AWSAccessKeyId=#{access_key_id}&Expires=#{expires}&Signature=#{encoded_canonical}"
+            "AWSAccessKeyId=#{access_key_id}&Expires=#{expires}&Signature=#{encoded_canonical}"
           end
       end
       
@@ -153,22 +151,18 @@ module AWS
                response-content-type response-content-language
                response-expires response-cache-control
                response-content-disposition response-content-encoding)
-        end
+          end
         
           def query_parameters_for_signature(params)
             params.select {|k, v| query_parameters.include?(k)}
           end
 
-          def cgi_escape(value)
-            result = CGI::escape(value.to_s)
-            result = result.gsub('+', '%20').gsub('%7E', '~')
-            result
+          def escape(value)
+            CGI::escape(value.to_s).gsub('+', '%20').gsub('%7E', '~')
           end
 
-          def cgi_unescape(value)
-            result = value.to_s.gsub('%20', '+').gsub('~', '%7E')
-            result = CGI::unescape(result)
-            result
+          def unescape(value)
+            CGI::unescape(value.to_s.gsub('%20', '+').gsub('~', '%7E'))
           end
         end
 
@@ -184,20 +178,6 @@ module AWS
           # (from http://docs.amazonwebservices.com/AmazonS3/2006-03-01/VirtualHosting.html)
           request['Host'] = DEFAULT_HOST
           build
-        end
-    
-        def extract_significant_parameter(unescape = true)
-          # unescape is true when build-ing a CanonicalString and should be false otherwise
-          parts = []
-          params = Rack::Utils.parse_nested_query(request.path.sub(/^[^?]*\?/, ''))
-          params = self.class.query_parameters_for_signature(params)
-          unless params.empty?
-            parts << params.sort_by{|p| p[0]}.collect{|p|
-              param = p[1] ? "#{p[0]}=#{p[1]}" : p[0]
-              unescape ? self.class.cgi_unescape(param) : param
-            }.join('&')
-          end
-          parts.count > 0 ? parts.join : nil
         end
 
         private
@@ -246,6 +226,20 @@ module AWS
 
           def path
             [only_path, extract_significant_parameter].compact.join('?')
+          end
+
+          def extract_significant_parameter
+            # unescape is true when build-ing a CanonicalString and should be false otherwise
+            parts = []
+            params = Rack::Utils.parse_nested_query(request.path.sub(/^[^?]*\?/, ''))
+            params = self.class.query_parameters_for_signature(params)
+            unless params.empty?
+              parts << params.sort_by{|p| p[0]}.collect{|p|
+                param = p[1] ? "#{p[0]}=#{p[1]}" : p[0]
+                unescape ? self.class.cgi_unescape(param) : param
+              }.join('&')
+            end
+            parts.count > 0 ? parts.join : nil
           end
           
           def only_path
