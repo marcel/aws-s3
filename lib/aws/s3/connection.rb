@@ -7,7 +7,8 @@ module AWS
         end
         
         def prepare_path(path)
-          path.valid_utf8? ? path : path.remove_extended
+          path = path.remove_extended unless path.valid_utf8?
+          URI.escape(path)
         end
       end
       
@@ -59,7 +60,7 @@ module AWS
         authenticate = options.delete(:authenticated)
         # Default to true unless explicitly false
         authenticate = true if authenticate.nil? 
-        path         = self.class.prepare_path(path)
+        path         = path.valid_utf8? ? path : path.remove_extended
         request      = request_method(:get).new(path, {})
         query_string = query_string_authentication(request, options)
         "#{protocol(options)}#{http.address}#{port_string}#{path}".tap do |url|
