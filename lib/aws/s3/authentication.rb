@@ -156,14 +156,6 @@ module AWS
           def query_parameters_for_signature(params)
             params.select {|k, v| query_parameters.include?(k)}
           end
-
-          def escape(value)
-            CGI::escape(value.to_s).gsub('+', '%20').gsub('%7E', '~')
-          end
-
-          def unescape(value)
-            CGI::unescape(value.to_s.gsub('%20', '+').gsub('~', '%7E'))
-          end
         end
 
         attr_reader :request, :headers
