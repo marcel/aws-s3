@@ -57,4 +57,6 @@ AWS::S3::Parsing.parser =
     FasterXmlSimple
   rescue LoadError
     XmlSimple
+  rescue NameError
+    XmlSimple
   end
