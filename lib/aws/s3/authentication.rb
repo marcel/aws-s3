@@ -233,13 +233,14 @@ module AWS
             query = URI.parse(request.path).query
             return nil if query.nil?
             params = CGI.parse(query) #this automatically unescapes query params
-            params = self.class.query_parameters_for_signature(params)
+            params = self.class.query_parameters_for_signature(params).to_a
             return nil if params.empty?
             params.sort! { |(x_key, _), (y_key, _)| x_key <=> y_key }
             params.map do |(key, value)|
               if value.nil? || resource_parameter?(key)
                 key
               else
+                value = value.join if value.respond_to?(:join)
                 "#{key}=#{value}"
               end
             end.join("&")
