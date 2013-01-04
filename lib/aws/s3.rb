@@ -40,6 +40,7 @@ module AWS
       escaped = escape_uri(path)
       escaped.gsub!(/=/, '%3D')
       escaped.gsub!(/&/, '%26')
+      escaped.gsub!(/;/, '%3B')
       escaped
     end
 

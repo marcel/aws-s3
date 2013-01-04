@@ -75,7 +75,7 @@ class ObjectTest < Test::Unit::TestCase
 
     begin
       AWS::S3::Base.connections['AWS::S3::Base'] = conn
-      assert_match 'response-content-disposition=attachment;%20filename%3Dfoo.txt',
+      assert_match 'response-content-disposition=attachment%3B%20filename%3Dfoo.txt',
         @object.url(:query => {
         'response-content-disposition' => 'attachment; filename=foo.txt'})
     ensure
