@@ -82,7 +82,8 @@ class CanonicalStringTest < Test::Unit::TestCase
       ['/test/query/string?acl=foo',         '/test/query/string?acl'],
       ['/test/query/string?torrent=foo',     '/test/query/string?torrent'],
       ['/test/query/string?logging=foo',     '/test/query/string?logging'],
-      ['/test/query/string?bar=baz&acl=foo', '/test/query/string?acl']
+      ['/test/query/string?bar=baz&acl=foo', '/test/query/string?acl'],
+      ['/test/query/string?acl&response-content-disposition=1', '/test/query/string?acl&response-content-disposition=1']
     ]
     
     significant_query_strings.each do |uncleaned_path, expected_cleaned_path|

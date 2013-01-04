@@ -156,9 +156,15 @@ module AWS
           def query_parameters_for_signature(params)
             params.select {|k, v| query_parameters.include?(k)}
           end
+
+          def resource_parameters
+            @resource_parameters ||= Set.new %w(acl logging torrent)
+          end
+
           memoized :default_headers
           memoized :interesting_headers
           memoized :query_parameters
+          memoized :resource_parameters
         end
 
         attr_reader :request, :headers
@@ -229,11 +235,18 @@ module AWS
             params = CGI.parse(query) #this automatically unescapes query params
             params = self.class.query_parameters_for_signature(params)
             return nil if params.empty?
-            parts = []
-            parts << params.sort_by{|p| p[0]}.collect{|p|
-              p[1] ? "#{p[0]}=#{p[1]}" : p[0]
-            }.join('&')
-            parts.join
+            params.sort! { |(x_key, _), (y_key, _)| x_key <=> y_key }
+            params.map do |(key, value)|
+              if value.nil? || resource_parameter?(key)
+                key
+              else
+                "#{key}=#{value}"
+              end
+            end.join("&")
+          end
+
+          def resource_parameter?(key)
+            self.class.resource_parameters.include? key
           end
           
           def only_path
