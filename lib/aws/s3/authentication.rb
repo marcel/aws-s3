@@ -156,6 +156,9 @@ module AWS
           def query_parameters_for_signature(params)
             params.select {|k, v| query_parameters.include?(k)}
           end
+          memoized :default_headers
+          memoized :interesting_headers
+          memoized :query_parameters
         end
 
         attr_reader :request, :headers
