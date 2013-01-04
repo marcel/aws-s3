@@ -7,7 +7,7 @@ class Hash
     unless empty?
       query_string << '?' if include_question_mark
       query_string << inject([]) do |params, (key, value)| 
-        params << "#{key}=#{AWS::S3.escape_uri(value)}" 
+        params << "#{key}=#{AWS::S3.escape_uri_component(value)}" 
       end.join('&')
     end
     query_string

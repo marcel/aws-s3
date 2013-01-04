@@ -29,8 +29,8 @@ class HashExtensionsTest < Test::Unit::TestCase
   end
 
   def test_escape_values
-    hash = {:one => '5+ 1'}
-    assert_equal '?one=5%2B%201', hash.to_query_string
+    hash = {:one => '5+ 1=6&'}
+    assert_equal '?one=5%2B%201%3D6%26', hash.to_query_string
   end
   
   def test_normalized_options
