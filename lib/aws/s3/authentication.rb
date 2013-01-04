@@ -236,7 +236,7 @@ module AWS
             params = self.class.query_parameters_for_signature(params).to_a
             return nil if params.empty?
             params.sort! { |(x_key, _), (y_key, _)| x_key <=> y_key }
-            params.map do |(key, value)|
+            params.map! do |(key, value)|
               if value.nil? || resource_parameter?(key)
                 key
               else
