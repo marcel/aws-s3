@@ -5,7 +5,7 @@ class ObjectTest < Test::Unit::TestCase
     bucket  = Bucket.new(Parsing::XmlParser.new(Fixtures::Buckets.bucket_with_one_key))
     @object = bucket.objects.first
   end
-  
+
   def test_header_settings_reader_and_writer
     headers = {'content-type' => 'text/plain'}
     mock_connection_for(S3Object, :returns => {:headers => headers})
@@ -56,6 +56,31 @@ class ObjectTest < Test::Unit::TestCase
   
   def test_object_has_owner
     assert_kind_of Owner, @object.owner 
+  end
+
+  def test_url_is_authenticated
+    conn = Connection.new :access_key_id => '123', :secret_access_key => 'abc'
+
+    begin
+      AWS::S3::Base.connections['AWS::S3::Base'] = conn
+      authenticated = lambda {|url| url['?AWSAccessKeyId']}
+      assert authenticated[@object.url]
+    ensure
+      AWS::S3::Base.connections.clear
+    end
+  end
+
+  def test_url_with_custom_query
+    conn = Connection.new :access_key_id => '123', :secret_access_key => 'abc'
+
+    begin
+      AWS::S3::Base.connections['AWS::S3::Base'] = conn
+      assert_match 'response-content-disposition=attachment;%20filename%3Dfoo.txt',
+        @object.url(:query => {
+        'response-content-disposition' => 'attachment; filename=foo.txt'})
+    ensure
+      AWS::S3::Base.connections.clear
+    end
   end
   
   def test_owner_attributes_are_accessible

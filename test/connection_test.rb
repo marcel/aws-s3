@@ -102,6 +102,12 @@ class ConnectionTest < Test::Unit::TestCase
     assert authenticated[connection.url_for('/foo', :authenticated => true)]
     assert !authenticated[connection.url_for('/foo', :authenticated => false)]
   end
+
+  def test_url_for_with_canonical_query_params
+    connection = Connection.new(:access_key_id => '123', :secret_access_key => 'abc', :server => 'example.org')
+    dispositioned = lambda {|url| url['?response-content-disposition=a']}
+    assert dispositioned[connection.url_for("/foo?response-content-disposition=a")]
+  end
   
   def test_connecting_through_a_proxy
     connection = nil
