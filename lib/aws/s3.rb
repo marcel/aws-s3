@@ -28,19 +28,30 @@ require 's3/connection'
 require 's3/authentication'
 require 's3/response'
 
-AWS::S3::Base.class_eval do
-  include AWS::S3::Connection::Management
+module AWS
+  module S3
+    UNSAFE_URI = /[^-_.!~*'()a-zA-Z\d;\/?:@&=$,\[\]]/n
+
+    def self.escape_uri(path)
+      URI.escape(path.to_s, UNSAFE_URI)
+    end
+
+    Base.class_eval do
+      include AWS::S3::Connection::Management
+    end
+
+    Bucket.class_eval do
+      include AWS::S3::Logging::Management
+      include AWS::S3::ACL::Bucket
+    end
+
+    S3Object.class_eval do
+      include AWS::S3::ACL::S3Object
+      include AWS::S3::BitTorrent
+    end
+  end
 end
 
-AWS::S3::Bucket.class_eval do
-  include AWS::S3::Logging::Management
-  include AWS::S3::ACL::Bucket
-end
-
-AWS::S3::S3Object.class_eval do
-  include AWS::S3::ACL::S3Object
-  include AWS::S3::BitTorrent
-end
 
 require_library_or_gem 'xmlsimple', 'xml-simple' unless defined? XmlSimple
 # If libxml is installed, we use the FasterXmlSimple library, that provides most of the functionality of XmlSimple
