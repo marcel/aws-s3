@@ -158,7 +158,7 @@ module AWS
           end
 
           def resource_parameters
-            @resource_parameters ||= Set.new %w(acl logging torrent)
+            Set.new %w(acl logging torrent)
           end
 
           memoized :default_headers
