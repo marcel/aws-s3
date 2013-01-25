@@ -1,15 +1,12 @@
 require 'test/unit'
-$:.unshift File.dirname(__FILE__) + '/../lib'
-require 'aws/s3'
-require File.dirname(__FILE__) + '/mocks/fake_response'
-require File.dirname(__FILE__) + '/fixtures'
-begin
-  require_library_or_gem 'ruby-debug'
-rescue LoadError
-end
-require_library_or_gem 'flexmock'
-require_library_or_gem 'flexmock/test_unit'
+require 'flexmock/test_unit'
 
+require File.expand_path('../../lib/aws/s3', __FILE__)
+require File.expand_path('../mocks/fake_response', __FILE__)
+require File.expand_path('../fixtures', __FILE__)
+
+# Load support files
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 # Data copied from http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTAuthentication.html
 module AmazonDocExampleData

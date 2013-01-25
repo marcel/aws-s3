@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require File.expand_path('../test_helper', __FILE__)
 
 class TypecastingTest < Test::Unit::TestCase
   # Make it easier to call methods in tests

@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require File.expand_path('../test_helper', __FILE__)
 
 class HeaderAuthenticationTest < Test::Unit::TestCase  
   def test_encoded_canonical

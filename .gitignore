@@ -1,3 +1,7 @@
 .rake_tasks
 site/public/index.html
-pkg/
+pkg/*
+.bundle
+*.gem
+Gemfile.lock
+.rvmrc
