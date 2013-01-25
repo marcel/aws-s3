@@ -1,4 +1,6 @@
-require File.dirname(__FILE__) + '/test_helper'
+# encoding: utf-8
+
+require File.expand_path('../test_helper', __FILE__)
 
 class HashExtensionsTest < Test::Unit::TestCase
   def test_to_query_string
@@ -66,13 +68,13 @@ class StringExtensionsTest < Test::Unit::TestCase
   end
   
   def test_valid_utf8?
-    assert !"318597/620065/GTL_75\24300_A600_A610.zip".valid_utf8?
-    assert "318597/620065/GTL_75£00_A600_A610.zip".valid_utf8?
+    assert(!"318597/620065/GTL_75\24300_A600_A610.zip".valid_utf8?)
+    assert("318597/620065/GTL_75£00_A600_A610.zip".valid_utf8?)
   end
   
   def test_remove_extended
-    assert "318597/620065/GTL_75\24300_A600_A610.zip".remove_extended.valid_utf8?
-    assert "318597/620065/GTL_75£00_A600_A610.zip".remove_extended.valid_utf8?
+    assert("318597/620065/GTL_75\24300_A600_A610.zip".remove_extended.valid_utf8?)
+    assert("318597/620065/GTL_75£00_A600_A610.zip".remove_extended.valid_utf8?)
   end
   
   def test_tap
