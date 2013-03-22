@@ -51,7 +51,7 @@ module AWS
         else
           http.start(&requester)
         end
-      rescue Errno::EPIPE, Timeout::Error, Errno::EINVAL, EOFError
+      rescue Errno::EPIPE, Timeout::Error, Errno::EINVAL, EOFError, Errno::ECONNRESET
         @http = create_connection
         attempts == 3 ? raise : (attempts += 1; retry)
       end
