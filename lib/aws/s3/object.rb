@@ -297,7 +297,11 @@ module AWS
             options.replace(bucket)
             bucket = nil
           end
-          '/' << File.join(bucket_name(bucket), name)
+          path = '/' << File.join(bucket_name(bucket), name)
+          if (query = options[:query]).respond_to?(:to_query_string)
+            path << query.to_query_string
+          end
+          path
         end
     
         private
