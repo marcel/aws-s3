@@ -78,6 +78,7 @@ namespace :dist do
     s.rdoc_options  = ['--title', "AWS::S3 -- Support for Amazon S3's REST api",
                        '--main',  'README',
                        '--line-numbers', '--inline-source']
+    s.license = "MIT"
   end
     
   # Regenerate README before packaging
