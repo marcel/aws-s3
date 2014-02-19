@@ -28,6 +28,9 @@ module AWS
         
         requester = Proc.new do 
           path    = self.class.prepare_path(path) if attempts.zero? # Only escape the path once
+          if options[:path]!=nil
+            path = options[:path]+path
+          end
           request = request_method(verb).new(path, headers)
           ensure_content_type!(request)
           add_user_agent!(request)
@@ -249,7 +252,7 @@ module AWS
       end
         
       class Options < Hash #:nodoc:
-        VALID_OPTIONS = [:access_key_id, :secret_access_key, :server, :port, :use_ssl, :persistent, :proxy].freeze
+        VALID_OPTIONS = [:access_key_id, :secret_access_key, :server, :port, :use_ssl, :persistent, :proxy, :path].freeze
         
         def initialize(options = {})
           super()

@@ -25,6 +25,14 @@ Before you can do anything, you must establish a connection using Base.establish
 
 The minimum connection options that you must specify are your access key id and your secret access key.
 
+For Walrus, or other requiring a different path for connection, one can use the :path option:
+
+  AWS::S3::Base.establish_connection!(
+    :access_key_id     => 'abc',
+    :secret_access_key => '123',
+    :path => 'services/Walrus'
+  )
+
 (If you don't already have your access keys, all you need to sign up for the S3 service is an account at Amazon. You can sign up for S3 and get access keys by visiting http://aws.amazon.com/s3.)
 
 For convenience, if you set two special environment variables with the value of your access keys, the console will automatically create a default connection for you. For example:
