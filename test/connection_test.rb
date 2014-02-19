@@ -15,6 +15,16 @@ class ConnectionTest < Test::Unit::TestCase
     connection = Connection.new(keys.merge(:use_ssl => true))
     assert connection.http.use_ssl?
   end
+
+  def test_use_ssl_option_defaults_to_false_in_connection
+    connection = Connection.new(keys)
+    assert !connection.http.use_ssl?
+  end
+
+  def test_use_ssl_option_is_set_to_false_in_connection
+    connection = Connection.new(keys.merge(:use_ssl => false))
+    assert !connection.http.use_ssl?
+  end
   
   def test_setting_port_to_443_implies_use_ssl
     connection = Connection.new(keys.merge(:port => 443))
