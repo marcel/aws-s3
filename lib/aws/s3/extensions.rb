@@ -240,7 +240,7 @@ class Class # :nodoc:
     cattr_reader(*syms)
     cattr_writer(*syms)
   end
-end if Class.instance_methods(false).grep(/^cattr_(?:reader|writer|accessor)$/).empty?
+end if Class.instance_methods.grep(/^cattr_(?:reader|writer|accessor)$/).empty?
 
 module SelectiveAttributeProxy
   def self.included(klass)
