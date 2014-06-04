@@ -93,7 +93,11 @@ be found in the documentation for Bucket.find.
 To add an object to a bucket you specify the name of the object, its value, and the bucket to put it in.
 
   file = 'black-flowers.mp3'
-  S3Object.store(file, open(file), 'jukebox')
+  File.open(file) do |io|
+    S3Object.store(file, io, 'jukebox')
+  end
+
+Note that <code>S3Object.store</code> does not close +IO+ objects.
 
 You'll see your file has been added to it:
 
@@ -125,7 +129,9 @@ bucket.
 
 You can store an object on S3 by specifying a key, its data and the name of the bucket you want to put it in:
 
-  S3Object.store('me.jpg', open('headshot.jpg'), 'photos')
+  File.open('headshot.jpg') do |io|
+    S3Object.store('me.jpg', io, 'photos')
+  end
 
 The content type of the object will be inferred by its extension. If the appropriate content type can not be inferred, S3 defaults
 to <tt>binary/octet-stream</tt>.
@@ -133,12 +139,14 @@ to <tt>binary/octet-stream</tt>.
 If you want to override this, you can explicitly indicate what content type the object should have with the <tt>:content_type</tt> option:
 
   file = 'black-flowers.m4a'
+  io = File.open(file)
   S3Object.store(
     file,
-    open(file),
+    io,
     'jukebox',
     :content_type => 'audio/mp4a-latm'
   )
+  io.close
 
 You can read more about storing files on S3 in the documentation for S3Object.store.
 
@@ -245,8 +253,9 @@ may be desirable for very large files so they are not read into memory all at on
   S3Object.store('greeting.txt', 'hello world!', 'marcel')
 
   # Streamed upload
-  S3Object.store('roots.mpeg', open('roots.mpeg'), 'marcel')
-
+  File.open('roots.mpeg') do |io|
+    S3Object.store('roots.mpeg', io, 'marcel')
+  end
 
 == Setting the current bucket
 ==== Scoping operations to a specific bucket
@@ -261,7 +270,9 @@ a subclass of Bucket or S3Object and telling it what bucket to use:
 For all methods that take a bucket name as an argument, the current bucket will be used if the bucket name argument is omitted.
 
   other_song = 'baby-please-come-home.mp3'
-  JukeBoxSong.store(other_song, open(other_song))
+  File.open(other_song) |io|
+    JukeBoxSong.store(other_song, io)
+  end
 
 This time we didn't have to explicitly pass in the bucket name, as the JukeBoxSong class knows that it will
 always use the 'jukebox' bucket. 
