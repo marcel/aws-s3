@@ -202,6 +202,7 @@ end
 class Class # :nodoc:
   def cattr_reader(*syms)
     syms.flatten.each do |sym|
+      next if sym.is_a?(Hash)
       class_eval(<<-EOS, __FILE__, __LINE__)
         unless defined? @@#{sym}
           @@#{sym} = nil
@@ -220,6 +221,7 @@ class Class # :nodoc:
 
   def cattr_writer(*syms)
     syms.flatten.each do |sym|
+      next if sym.is_a?(Hash)
       class_eval(<<-EOS, __FILE__, __LINE__)
         unless defined? @@#{sym}
           @@#{sym} = nil
