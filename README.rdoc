@@ -1,7 +1,7 @@
 = AWS::S3
 
 AWS::S3 is a Ruby library for Amazon's Simple Storage Service's REST API (http://aws.amazon.com/s3).
-Full documentation of the currently supported API can be found at http://docs.amazonwebservices.com/AmazonS3/2006-03-01.
+Full documentation of the currently supported API can be found at http://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html
 
 == Getting started
 
