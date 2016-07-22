@@ -59,6 +59,8 @@ module AWS
           # We actually want nil if the attribute is nil. So we use has_key? rather than [] + ||.
           if error.has_key?(method.to_s)
             error[method.to_s]
+          elsif method.to_s == 'message'
+            code
           else
             super
           end
